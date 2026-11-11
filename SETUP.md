@@ -7,8 +7,12 @@ You don't need to code. You'll make a few accounts, copy keys from each into one
 - **Free plan:** a member signs in with their email, enters their birth details and gets a full natal chart deep dive (steps 1–7 and 10 of your method, plus a teaser of their next 3 key dates). It's written in about two minutes.
 - **Timeline plan:** a monthly timeline lands on a random day each month, covering the next 30 days with exact transit peak dates, themes, windows, lunations, eclipses, stations and a ritual.
 - **Deep Dive plan:** everything above, plus 3 questions a month picked from a menu (category, then a specific question). Each answer arrives on a surprise day 2–9 days later, between 10am and 8pm in the member's time zone. Members can also save up to 2 people and get compatibility readings (synastry, house overlays both ways, how their timelines interact over the next year).
-- **One-time purchases** for anyone, subscribed or not: a single question, a compatibility reading, or a year-ahead timeline. Each arrives on a surprise day. Turn each one on or off and set its price in `lib/config.ts`.
-- Both plans can also be paid yearly.
+- **One-time purchases** for anyone, subscribed or not, delivered in about two minutes:
+  - **Compatibility report** (the main product): $19 founding price for the first 50 buyers, then $29. Each report includes a free month of the personal timeline. When the month ends the member gets an email inviting them to subscribe; no card is charged automatically.
+  - **Single question**: $9.
+  - **Year-ahead timeline**: $19.
+  Turn each one on or off and set its price in `lib/config.ts`.
+- **Plans:** Timeline $9/month or $90/year, Deep Dive $29/month or $290/year (yearly = 2 months free).
 - Members get an email and, if they turn them on, phone notifications when a reading arrives.
 - You get a private **Admin** page that shows every member and reading. From it you can retry a failed reading, or send any reading immediately for testing.
 
@@ -29,7 +33,7 @@ All astronomy is calculated in code: planets, houses, nodes, Lilith, transits an
 ## Step 1: Supabase (logins and database)
 
 1. Create a project at supabase.com. Save the database password somewhere safe.
-2. Go to **SQL Editor > New query**, paste everything in `supabase/schema.sql` and click **Run**. Then do the same with `supabase/002_one_time_purchases.sql`. (Both are already done on your project.)
+2. Go to **SQL Editor > New query**, paste everything in `supabase/schema.sql` and click **Run**. Then do the same with `supabase/002_one_time_purchases.sql` and `supabase/003_founding_and_bonus.sql`. (All three are already done on your project.)
 3. Go to **Authentication > Email Templates > Magic Link** and make sure the email includes the code. Add a line like `Your sign-in code: {{ .Token }}`. Members can type the code or tap the link.
 4. Go to **Authentication > URL Configuration**. Set **Site URL** to `https://yourdomain.com` and add `https://yourdomain.com/auth/callback` under Redirect URLs.
 5. Go to **Authentication > SMTP Settings** and turn on custom SMTP using Resend's details (see step 4). Supabase's built-in email only sends a few emails an hour.
@@ -40,11 +44,11 @@ All astronomy is calculated in code: planets, houses, nodes, Lilith, transits an
 Start in **Test mode** (toggle at the top).
 
 1. Go to **Product catalog > Add product** and make:
-   - "Timeline": a recurring price of $12 per month **and** a second recurring price of $108 per year
-   - "Deep Dive": $29 per month **and** $260 per year
-   - "Single question": a one-time price of $9
-   - "Compatibility reading": a one-time price of $15
-   - "Year-ahead timeline": a one-time price of $19
+   - "Timeline": recurring $9 per month **and** recurring $90 per year
+   - "Deep Dive": recurring $29 per month **and** recurring $290 per year
+   - "Compatibility report": one-time $29 **and** a second one-time price of $19 (the founding price)
+   - "Single question": one-time $9
+   - "Year-ahead timeline": one-time $19
 
    Copy each **Price ID** (it starts with `price_`). They go in the `STRIPE_PRICE_...` settings in Vercel.
 2. Go to **Settings > Billing > Customer portal**. Turn on cancellations and let customers switch between your two products.
@@ -92,6 +96,13 @@ The delivery scheduler runs on its own every 15 minutes (it's set in `vercel.jso
 3. Ask a question, then open **Admin** and click **Send now** on it, so you don't have to wait for the surprise day.
 4. Turn on alerts on your phone. On iPhone, first open the site in Safari, tap Share, choose Add to Home Screen, then open it from the home screen.
 5. Read a few readings closely. To change the voice or the method, edit `lib/readings.ts`.
+
+## Track what matters (your board's advice)
+
+- **Free-to-paid:** what share of free-chart members buy anything (Admin page member counts, Stripe payments).
+- **Compatibility-to-subscriber:** how many compatibility buyers subscribe after their free month.
+- **Retention:** how many subscribers are still paying in month 2 and month 3 (Stripe > Billing > Subscriptions).
+- Change one price at a time. The founding offer is your first test: watch whether buying slows down when the price moves to $29.
 
 ## Before you open to the public
 

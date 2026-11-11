@@ -1,18 +1,19 @@
 import { NextResponse } from "next/server";
 import { currentUser, supabaseAdmin } from "@/lib/supabase";
-import { stripe, oneTimePrice } from "@/lib/stripe";
+import { stripe, currentOffer } from "@/lib/stripe";
 import { ONE_TIME, OneTimeKey, QUESTION_MENU } from "@/lib/config";
 import { parseBirth } from "@/lib/validate";
 
 const RELATIONSHIPS = ["partner", "crush", "ex", "friend", "family", "business partner", "coworker"];
 
-/** Starts a one-time Stripe checkout. The reading is scheduled by the Stripe webhook once payment succeeds. */
+/** Starts a one-time Stripe checkout. The Stripe webhook writes the reading once payment succeeds. */
 export async function POST(req: Request) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   const body = await req.json().catch(() => ({}));
   const product = body.product as OneTimeKey;
-  const price = ONE_TIME[product] ? oneTimePrice(product) : undefined;
+  const offer = ONE_TIME[product] ? await currentOffer(product) : null;
+  const price = offer?.priceId;
   if (!price || !process.env.STRIPE_SECRET_KEY) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
 
   const db = supabaseAdmin();

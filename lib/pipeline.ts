@@ -2,7 +2,7 @@
 import { supabaseAdmin } from "./supabase";
 import { natalReading, monthlyTimeline, questionAnswer, synastryReading, yearAheadTimeline } from "./readings";
 import { BirthData } from "./engine/natal";
-import { notifyReadingArrived } from "./notify";
+import { notifyReadingArrived, inviteToSubscribe } from "./notify";
 import { firstTimelineTime, nextMonthlyTimelineTime } from "./schedule";
 import { TIERS, Tier } from "./config";
 
@@ -30,7 +30,7 @@ export async function generateReading(id: string) {
   try {
     const { data: profile } = await db.from("profiles").select("*").eq("id", row.user_id).single();
     if (!profile?.birth_date) throw new Error("Member has no birth data yet");
-    if (row.kind === "timeline" && !TIERS[profile.tier as Tier].monthlyTimeline) {
+    if (row.kind === "timeline" && !row.paid && !TIERS[profile.tier as Tier].monthlyTimeline) {
       await db.from("readings").delete().eq("id", id); // subscription ended before it was due
       return;
     }
@@ -116,5 +116,18 @@ export async function runCycle(timeBudgetMs = 240_000) {
     written++;
   }
   const delivered = await deliverDue();
-  return { scheduledTimelines: scheduled, written, delivered };
+  const invited = await sendBonusEndedInvites();
+  return { scheduledTimelines: scheduled, written, delivered, invited };
+}
+
+/** When a free bonus month ends (and they haven't subscribed), invite them to keep their timeline */
+export async function sendBonusEndedInvites() {
+  const db = supabaseAdmin();
+  const { data: due } = await db.from("profiles").select("id,email,name")
+    .eq("tier", "free").eq("bonus_invite_sent", false).lte("bonus_timeline_until", new Date().toISOString()).limit(100);
+  for (const p of due ?? []) {
+    await inviteToSubscribe(p.id, p.email, p.name);
+    await db.from("profiles").update({ bonus_invite_sent: true }).eq("id", p.id);
+  }
+  return due?.length ?? 0;
 }

@@ -36,7 +36,7 @@ export default function AskQuestion({ menu, remaining, perMonth, buyPrice }: { m
   return (
     <div>
       <p className="hint">{buying
-        ? (perMonth > 0 ? `You've used this month's ${perMonth} questions. Buy one more for ${buyPrice}: pick an area, then the question.` : `Ask one question for ${buyPrice}. Pick an area, then the question.`)
+        ? (perMonth > 0 ? `You've used this month's ${perMonth} questions. Buy one more for ${buyPrice}: pick an area, then the question.` : `Ask one question for ${buyPrice} and get your answer in minutes. Pick an area, then the question.`)
         : `${remaining} of ${perMonth} left this month. Pick an area, then the question.`}</p>
       <div className="cats" role="group" aria-label="Question area">
         {menu.map(m => (

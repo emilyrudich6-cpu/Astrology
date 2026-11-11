@@ -2,10 +2,12 @@ import Link from "next/link";
 import ChartWheel from "@/components/ChartWheel";
 import { PLANETS, lonOf, speedOf } from "@/lib/engine/core";
 import { BRAND, TIERS, Tier, ONE_TIME, OneTimeKey } from "@/lib/config";
+import { currentOffer } from "@/lib/stripe";
 
 export const revalidate = 3600; // redraw the live sky every hour
 
-export default function Home() {
+export default async function Home() {
+  const compat = await currentOffer("synastry").catch(() => null);
   const now = new Date();
   const sky = PLANETS.map(p => ({ name: p, lon: lonOf(p, now), retrograde: speedOf(p, now) < 0 }));
   const today = now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
@@ -29,7 +31,7 @@ export default function Home() {
           <li><h3>Enter your birth details</h3><p>Date, time and place. No birth time? You still get most of your chart.</p></li>
           <li><h3>Read your free chart</h3><p>Your big three, chart ruler, every planet, aspects, patterns, points and harmonics.</p></li>
           <li><h3>Your timeline arrives</h3><p>Once a month on a surprise day, with exact peak dates grouped into themes and windows.</p></li>
-          <li><h3>Ask what's on your mind</h3><p>Pick a question from the menu. Your answer lands on a surprise day within the week.</p></li>
+          <li><h3>Compare charts with someone</h3><p>A compatibility report shows where you click, where you clash, and how your timelines line up.</p></li>
         </ol>
       </section>
 
@@ -52,11 +54,19 @@ export default function Home() {
             );
           })}
         </div>
-        <h3 style={{ marginTop: 48 }}>Or buy once, no subscription</h3>
+        <h3 style={{ marginTop: 48 }}>Or buy once, no subscription. Delivered in minutes.</h3>
         <ul className="once">
-          {(Object.keys(ONE_TIME) as OneTimeKey[]).filter(k => ONE_TIME[k].enabled).map(k => (
-            <li key={k}><span><strong>{ONE_TIME[k].label}</strong><br /><span className="hint">{ONE_TIME[k].blurb}</span></span><span className="price">{ONE_TIME[k].price}</span></li>
-          ))}
+          {(Object.keys(ONE_TIME) as OneTimeKey[]).filter(k => ONE_TIME[k].enabled).map(k => {
+            const founding = k === "synastry" && compat && compat.foundingLeft > 0;
+            return (
+              <li key={k}>
+                <span><strong>{ONE_TIME[k].label}</strong><br /><span className="hint">{ONE_TIME[k].blurb}</span>
+                  {founding && <><br /><span className="hint">Founding price for the first {ONE_TIME.synastry.founding!.limit} readers, {compat!.foundingLeft} left. Then {ONE_TIME[k].price}.</span></>}
+                </span>
+                <span className="price">{founding ? compat!.price : ONE_TIME[k].price}</span>
+              </li>
+            );
+          })}
         </ul>
         <p className="hint" style={{ marginTop: 18 }}>Cancel any time from your account. {BRAND.name} is for entertainment and self-reflection.</p>
       </section>

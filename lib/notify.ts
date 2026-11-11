@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import webpush from "web-push";
-import { BRAND } from "./config";
+import { BRAND, TIERS } from "./config";
 import { supabaseAdmin } from "./supabase";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -41,6 +41,23 @@ export async function notifyReadingArrived(userId: string, email: string | null,
     }
   }
   return results;
+}
+
+export async function inviteToSubscribe(userId: string, email: string | null, name: string | null) {
+  if (!email || !process.env.RESEND_API_KEY) return;
+  const url = `${SITE}/dashboard?plan=timeline`;
+  try {
+    await new Resend(process.env.RESEND_API_KEY).emails.send({
+      from: `${BRAND.name} <${BRAND.emailFrom}>`, to: email,
+      subject: "Your free month of timeline readings is up",
+      html: `<div style="font-family:Georgia,serif;max-width:520px;margin:auto;padding:32px;background:#1b1440;color:#f3eeff;border-radius:16px">
+        <p style="font-size:12px;color:#a79dcc">${BRAND.name}</p>
+        <h1 style="font-weight:normal;font-size:26px">${name ? escapeHtml(name) + ", y" : "Y"}our free month just ended</h1>
+        <p style="font-size:17px">Keep your personal timeline arriving every month, with the exact dates your biggest transits peak. ${TIERS.timeline.price}, cancel any time.</p>
+        <p><a href="${url}" style="display:inline-block;background:#ff8fcf;color:#2a0d22;padding:12px 22px;border-radius:999px;text-decoration:none">Keep my timeline</a></p>
+        <p style="font-size:12px;color:#a79dcc">You won't be charged unless you choose a plan. ${BRAND.disclaimer}</p></div>`,
+    });
+  } catch (e) { console.error("invite email failed", userId, e); }
 }
 
 const escapeHtml = (s: string) => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));

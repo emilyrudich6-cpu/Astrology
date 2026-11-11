@@ -23,26 +23,37 @@ export const TIERS: Record<Tier, {
     monthlyTimeline: false, questionsPerMonth: 0, savedPeople: 0,
   },
   timeline: {
-    label: "Timeline", price: "$12 / month", blurb: "Your personal timeline, every month.",
+    label: "Timeline", price: "$9 / month", blurb: "Your personal timeline, every month.",
     perks: ["Everything in Free", "A monthly timeline with exact transit peak dates", "Themes and power windows for the month", "A manifestation ritual tied to your next key date"],
     monthlyTimeline: true, questionsPerMonth: 0, savedPeople: 0,
     stripePriceEnv: "STRIPE_PRICE_TIMELINE",
-    yearlyPrice: "$108 / year", stripeYearlyPriceEnv: "STRIPE_PRICE_TIMELINE_YEARLY",
+    yearlyPrice: "$90 / year (2 months free)", stripeYearlyPriceEnv: "STRIPE_PRICE_TIMELINE_YEARLY",
   },
   deep: {
     label: "Deep Dive", price: "$29 / month", blurb: "Timeline plus your questions answered.",
     perks: ["Everything in Timeline", "3 questions a month, answered on a surprise day", "Compatibility readings for up to 2 people", "How your timelines interact over the next year"],
     monthlyTimeline: true, questionsPerMonth: 3, savedPeople: 2,
     stripePriceEnv: "STRIPE_PRICE_DEEP",
-    yearlyPrice: "$260 / year", stripeYearlyPriceEnv: "STRIPE_PRICE_DEEP_YEARLY",
+    yearlyPrice: "$290 / year (2 months free)", stripeYearlyPriceEnv: "STRIPE_PRICE_DEEP_YEARLY",
   },
 };
 
-/** One-time purchases for anyone signed in, subscribed or not. Set enabled: false to hide one. */
+/** One-time purchases for anyone signed in, subscribed or not. They arrive right away (about 2 minutes).
+ *  Set enabled: false to hide one. */
 export type OneTimeKey = "question" | "synastry" | "yearahead";
-export const ONE_TIME: Record<OneTimeKey, { enabled: boolean; label: string; price: string; blurb: string; stripePriceEnv: string }> = {
-  question: { enabled: true, label: "Single question", price: "$9", blurb: "Pick one question from the menu. The answer arrives on a surprise day within the week.", stripePriceEnv: "STRIPE_PRICE_ONE_QUESTION" },
-  synastry: { enabled: true, label: "Compatibility reading", price: "$15", blurb: "You and one person: synastry, house overlays and how your timelines line up over the next year.", stripePriceEnv: "STRIPE_PRICE_ONE_SYNASTRY" },
+export const ONE_TIME: Record<OneTimeKey, {
+  enabled: boolean; label: string; price: string; blurb: string; stripePriceEnv: string;
+  founding?: { price: string; limit: number; stripePriceEnv: string }; // early-buyer price for the first `limit` sales
+  bonusTimelineDays?: number; // free timeline included with the purchase
+}> = {
+  synastry: {
+    enabled: true, label: "Compatibility report", price: "$29",
+    blurb: "Where you two click, where you'll clash, and how to move through it, plus how your timelines line up over the next year. Includes a free month of your personal timeline.",
+    stripePriceEnv: "STRIPE_PRICE_ONE_SYNASTRY",
+    founding: { price: "$19", limit: 50, stripePriceEnv: "STRIPE_PRICE_ONE_SYNASTRY_FOUNDING" },
+    bonusTimelineDays: 30,
+  },
+  question: { enabled: true, label: "Single question", price: "$9", blurb: "Pick one question from the menu and get your answer in minutes.", stripePriceEnv: "STRIPE_PRICE_ONE_QUESTION" },
   yearahead: { enabled: true, label: "Year-ahead timeline", price: "$19", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripePriceEnv: "STRIPE_PRICE_ONE_YEARAHEAD" },
 };
 
