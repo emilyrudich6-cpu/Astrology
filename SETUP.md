@@ -41,21 +41,21 @@ All astronomy is calculated in code: planets, houses, nodes, Lilith, transits an
 
 ## Step 2: Stripe (payments)
 
-Start in **Test mode** (toggle at the top).
+**Already done in your "Astrology Deep Dives sandbox" test account:**
+- Products and prices, each with a lookup key the site uses to find it (so you don't copy any Price IDs):
+  - Timeline: `timeline_monthly` $9, `timeline_yearly` $90
+  - Deep Dive: `deep_monthly` $29, `deep_yearly` $290
+  - Compatibility report: `compat_founding` $19 (first 50), `compat_regular` $29
+  - Single question: `one_question` $9
+  - Year-ahead timeline: `yearahead` $19
+- The member billing page (customer portal): switch between plans monthly or yearly, update card, see invoices, cancel at the end of the period.
 
-1. Go to **Product catalog > Add product** and make:
-   - "Timeline": recurring $9 per month **and** recurring $90 per year
-   - "Deep Dive": recurring $29 per month **and** recurring $290 per year
-   - "Compatibility report": one-time $29 **and** a second one-time price of $19 (the founding price)
-   - "Single question": one-time $9
-   - "Year-ahead timeline": one-time $19
-
-   Copy each **Price ID** (it starts with `price_`). They go in the `STRIPE_PRICE_...` settings in Vercel.
-2. Go to **Settings > Billing > Customer portal**. Turn on cancellations and let customers switch between your two products.
-3. Go to **Developers > Webhooks > Add endpoint**. Use the URL `https://yourdomain.com/api/stripe/webhook` and these events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. Copy the **Signing secret** (`whsec_...`).
-4. Go to **Developers > API keys** and copy the **Secret key**.
-
-If you change prices, update the prices shown on the site in `lib/config.ts` too.
+**Still to do:**
+1. **Webhook** (after the site is live on Vercel): Developers > Webhooks > Add endpoint, URL `https://yourdomain.com/api/stripe/webhook`, events `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. Copy the **Signing secret** (`whsec_...`). Claude can create this for you through the Stripe connector.
+2. **Secret key:** Developers > API keys > Secret key. You paste it into Vercel yourself.
+3. **Failed payments:** Settings > Billing > Revenue recovery. Turn on Smart Retries and the failed-payment emails (Stripe recommends both).
+4. **Tax:** Settings > Tax. Add your business address and turn on threshold monitoring (free). It tells you if you ever need to collect sales tax somewhere. Pick a product tax code for digital content from Stripe's list (Stripe says not to use the generic "electronically supplied services" code for US sales); ask an accountant if you're unsure.
+5. **Going live:** these were made in test mode. When you switch to live mode, the same products, prices (with the same lookup keys), portal settings and webhook need to exist there too. Claude can copy them over through the connector.
 
 ## Step 3: Anthropic (the reading writer)
 
@@ -80,7 +80,7 @@ Once, in Terminal inside the project folder, run `npx web-push generate-vapid-ke
    - `NEXT_PUBLIC_SITE_URL`: `https://yourdomain.com`
    - The three Supabase values
    - `ANTHROPIC_API_KEY`
-   - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_TIMELINE`, `STRIPE_PRICE_DEEP`
+   - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
    - `RESEND_API_KEY`
    - The public VAPID key twice (as `NEXT_PUBLIC_VAPID_PUBLIC_KEY` and `VAPID_PUBLIC_KEY`), `VAPID_PRIVATE_KEY` and `VAPID_CONTACT_EMAIL`
    - `CRON_SECRET`: any long random string

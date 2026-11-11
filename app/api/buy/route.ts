@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser, supabaseAdmin } from "@/lib/supabase";
-import { stripe, currentOffer } from "@/lib/stripe";
+import { stripe, currentOffer, priceIdForLookupKey } from "@/lib/stripe";
 import { ONE_TIME, OneTimeKey, QUESTION_MENU } from "@/lib/config";
 import { parseBirth } from "@/lib/validate";
 
@@ -12,9 +12,10 @@ export async function POST(req: Request) {
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
   const body = await req.json().catch(() => ({}));
   const product = body.product as OneTimeKey;
+  if (!process.env.STRIPE_SECRET_KEY) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
   const offer = ONE_TIME[product] ? await currentOffer(product) : null;
-  const price = offer?.priceId;
-  if (!price || !process.env.STRIPE_SECRET_KEY) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
+  const price = offer ? await priceIdForLookupKey(offer.lookupKey) : undefined;
+  if (!price) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
 
   const db = supabaseAdmin();
   const { data: p } = await db.from("profiles").select("stripe_customer_id,birth_date").eq("id", user.id).single();

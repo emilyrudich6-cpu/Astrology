@@ -1,4 +1,7 @@
 // ====== EDIT THIS FILE to change the brand, prices shown, tiers and question menu ======
+// Prices are charged from Stripe by "lookup key" (set on each price in Stripe). If you change a
+// price in Stripe, create the new price with the same lookup key ("Transfer lookup key"), then
+// update the price text shown here.
 
 export const BRAND = {
   name: "Astrology Deep Dives",
@@ -13,9 +16,9 @@ export type Interval = "month" | "year";
 export const TIERS: Record<Tier, {
   label: string; price: string; blurb: string; perks: string[];
   monthlyTimeline: boolean; questionsPerMonth: number; savedPeople: number;
-  stripePriceEnv?: string;       // monthly price ID (env var name)
-  yearlyPrice?: string;          // shown on the site
-  stripeYearlyPriceEnv?: string; // yearly price ID (env var name)
+  stripeLookupKey?: string;       // Stripe price lookup key, monthly
+  yearlyPrice?: string;           // shown on the site
+  stripeYearlyLookupKey?: string; // Stripe price lookup key, yearly
 }> = {
   free: {
     label: "Free", price: "$0", blurb: "Your full natal chart deep dive.",
@@ -26,15 +29,15 @@ export const TIERS: Record<Tier, {
     label: "Timeline", price: "$9 / month", blurb: "Your personal timeline, every month.",
     perks: ["Everything in Free", "A monthly timeline with exact transit peak dates", "Themes and power windows for the month", "A manifestation ritual tied to your next key date"],
     monthlyTimeline: true, questionsPerMonth: 0, savedPeople: 0,
-    stripePriceEnv: "STRIPE_PRICE_TIMELINE",
-    yearlyPrice: "$90 / year (2 months free)", stripeYearlyPriceEnv: "STRIPE_PRICE_TIMELINE_YEARLY",
+    stripeLookupKey: "timeline_monthly",
+    yearlyPrice: "$90 / year (2 months free)", stripeYearlyLookupKey: "timeline_yearly",
   },
   deep: {
     label: "Deep Dive", price: "$29 / month", blurb: "Timeline plus your questions answered.",
     perks: ["Everything in Timeline", "3 questions a month, answered on a surprise day", "Compatibility readings for up to 2 people", "How your timelines interact over the next year"],
     monthlyTimeline: true, questionsPerMonth: 3, savedPeople: 2,
-    stripePriceEnv: "STRIPE_PRICE_DEEP",
-    yearlyPrice: "$290 / year (2 months free)", stripeYearlyPriceEnv: "STRIPE_PRICE_DEEP_YEARLY",
+    stripeLookupKey: "deep_monthly",
+    yearlyPrice: "$290 / year (2 months free)", stripeYearlyLookupKey: "deep_yearly",
   },
 };
 
@@ -42,19 +45,19 @@ export const TIERS: Record<Tier, {
  *  Set enabled: false to hide one. */
 export type OneTimeKey = "question" | "synastry" | "yearahead";
 export const ONE_TIME: Record<OneTimeKey, {
-  enabled: boolean; label: string; price: string; blurb: string; stripePriceEnv: string;
-  founding?: { price: string; limit: number; stripePriceEnv: string }; // early-buyer price for the first `limit` sales
+  enabled: boolean; label: string; price: string; blurb: string; stripeLookupKey: string;
+  founding?: { price: string; limit: number; stripeLookupKey: string }; // early-buyer price for the first `limit` sales
   bonusTimelineDays?: number; // free timeline included with the purchase
 }> = {
   synastry: {
     enabled: true, label: "Compatibility report", price: "$29",
     blurb: "Where you two click, where you'll clash, and how to move through it, plus how your timelines line up over the next year. Includes a free month of your personal timeline.",
-    stripePriceEnv: "STRIPE_PRICE_ONE_SYNASTRY",
-    founding: { price: "$19", limit: 50, stripePriceEnv: "STRIPE_PRICE_ONE_SYNASTRY_FOUNDING" },
+    stripeLookupKey: "compat_regular",
+    founding: { price: "$19", limit: 50, stripeLookupKey: "compat_founding" },
     bonusTimelineDays: 30,
   },
-  question: { enabled: true, label: "Single question", price: "$9", blurb: "Pick one question from the menu and get your answer in minutes.", stripePriceEnv: "STRIPE_PRICE_ONE_QUESTION" },
-  yearahead: { enabled: true, label: "Year-ahead timeline", price: "$19", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripePriceEnv: "STRIPE_PRICE_ONE_YEARAHEAD" },
+  question: { enabled: true, label: "Single question", price: "$9", blurb: "Pick one question from the menu and get your answer in minutes.", stripeLookupKey: "one_question" },
+  yearahead: { enabled: true, label: "Year-ahead timeline", price: "$19", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripeLookupKey: "yearahead" },
 };
 
 /** Surprise delivery: answers arrive between these many days after asking */

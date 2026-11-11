@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   const db = supabaseAdmin();
   const sync = async (sub: Stripe.Subscription) => {
     const active = ["active", "trialing", "past_due"].includes(sub.status);
-    const tier = active ? tierForPrice(sub.items.data[0]?.price.id) ?? "free" : "free";
+    const tier = active ? tierForPrice(sub.items.data[0]?.price) ?? "free" : "free";
     const userId = sub.metadata?.user_id;
     const q = db.from("profiles").update({ tier, subscription_status: sub.status, stripe_subscription_id: sub.id, stripe_customer_id: String(sub.customer) });
     await (userId ? q.eq("id", userId) : q.eq("stripe_customer_id", String(sub.customer)));
