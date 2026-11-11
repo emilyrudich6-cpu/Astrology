@@ -121,7 +121,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         </section>
 
         <section className="panel">
-          <h3>Compatibility</h3>
+          <h3>{ONE_TIME.synastry.label}</h3>
           {tier.savedPeople > 0 ? (
             <People people={people ?? []} max={tier.savedPeople} />
           ) : compat ? (
@@ -131,7 +131,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
               <BuyCompatibility price={compat.price} />
             </>
           ) : (
-            <p className="hint">Deep Dive members can save up to {TIERS.deep.savedPeople} people and get a compatibility reading with how your timelines line up over the next year.</p>
+            <p className="hint">{ONE_TIME.synastry.blurb}</p>
           )}
         </section>
 

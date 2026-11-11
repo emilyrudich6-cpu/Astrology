@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => ({}));
   const product = body.product as OneTimeKey;
   if (!process.env.STRIPE_SECRET_KEY) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
-  const offer = ONE_TIME[product] ? await currentOffer(product) : null;
+  const offer = ONE_TIME[product]?.enabled ? await currentOffer(product) : null;
   const price = offer ? await priceIdForLookupKey(offer.lookupKey) : undefined;
   if (!price) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
 

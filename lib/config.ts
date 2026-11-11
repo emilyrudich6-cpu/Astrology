@@ -4,9 +4,9 @@
 // update the price text shown here.
 
 export const BRAND = {
-  name: "Astrology Deep Dives",
-  tagline: "Your chart, your timing, delivered when the stars say so.",
-  emailFrom: "readings@yourdomain.com", // must be a domain you verify in Resend
+  name: "Vertex Point",
+  tagline: "Some call it the Vertex Point. Some call it destiny.",
+  emailFrom: "readings@vertexpoint.talk", // must be a domain you verify in Resend
   disclaimer: "For entertainment and self-reflection only. Not medical, legal, financial or psychological advice.",
 };
 
@@ -33,11 +33,12 @@ export const TIERS: Record<Tier, {
     yearlyPrice: "$90 / year (2 months free)", stripeYearlyLookupKey: "timeline_yearly",
   },
   deep: {
-    label: "Deep Dive", price: "$29 / month", blurb: "Timeline plus your questions answered.",
-    perks: ["Everything in Timeline", "3 questions a month, answered on a surprise day", "Compatibility readings for up to 2 people", "How your timelines interact over the next year"],
-    monthlyTimeline: true, questionsPerMonth: 3, savedPeople: 2,
+    label: "Deep Dive", price: "$19 / month", blurb: "Timeline plus your questions answered.",
+    // Other people's charts and timelines come only with The Two of You (one-time), not with this plan.
+    perks: ["Everything in Timeline", "2 questions a month, answered on a surprise day", "Pick your questions from a guided menu: love, work, money, home, friends, growth"],
+    monthlyTimeline: true, questionsPerMonth: 2, savedPeople: 0,
     stripeLookupKey: "deep_monthly",
-    yearlyPrice: "$290 / year (2 months free)", stripeYearlyLookupKey: "deep_yearly",
+    yearlyPrice: "$190 / year (2 months free)", stripeYearlyLookupKey: "deep_yearly",
   },
 };
 
@@ -50,13 +51,13 @@ export const ONE_TIME: Record<OneTimeKey, {
   bonusTimelineDays?: number; // free timeline included with the purchase
 }> = {
   synastry: {
-    enabled: true, label: "Compatibility report", price: "$29",
-    blurb: "Where you two click, where you'll clash, and how to move through it, plus how your timelines line up over the next year. Includes a free month of your personal timeline.",
+    enabled: true, label: "The Two of You", price: "$29",
+    blurb: "Your compatibility report, with both charts included. Where you two click, where you'll clash, and how to move through it, plus how your timelines line up over the next year. Includes a free month of your personal timeline.",
     stripeLookupKey: "compat_regular",
     founding: { price: "$19", limit: 50, stripeLookupKey: "compat_founding" },
     bonusTimelineDays: 30,
   },
-  question: { enabled: true, label: "Single question", price: "$9", blurb: "Pick one question from the menu and get your answer in minutes.", stripeLookupKey: "one_question" },
+  question: { enabled: false, label: "Single question", price: "$9", blurb: "Pick one question from the menu and get your answer in minutes.", stripeLookupKey: "one_question" },
   yearahead: { enabled: true, label: "Year-ahead timeline", price: "$19", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripeLookupKey: "yearahead" },
 };
 

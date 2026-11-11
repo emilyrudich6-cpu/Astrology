@@ -1,74 +1,112 @@
 import Link from "next/link";
-import ChartWheel from "@/components/ChartWheel";
-import { PLANETS, lonOf, speedOf } from "@/lib/engine/core";
 import { BRAND, TIERS, Tier, ONE_TIME, OneTimeKey } from "@/lib/config";
 import { currentOffer } from "@/lib/stripe";
+import NewsletterSignup from "@/components/NewsletterSignup";
 
-export const revalidate = 3600; // redraw the live sky every hour
+export const revalidate = 3600;
+
+const PLAN_DETAIL: Record<Exclude<Tier, "free">, string> = {
+  timeline: "Every month, on a surprise day, your timeline arrives with the exact dates your biggest transits peak.",
+  deep: "Your monthly timeline plus guided questions about it, saved people and compatibility.",
+};
+const ONE_TIME_ORDER: OneTimeKey[] = ["synastry", "question", "yearahead"];
+
+function Orbits() {
+  return (
+    <svg className="orbits" viewBox="0 0 160 160" aria-hidden>
+      <circle cx="62" cy="80" r="46" fill="none" stroke="var(--silver)" />
+      <circle cx="98" cy="80" r="46" fill="none" stroke="var(--silver)" />
+    </svg>
+  );
+}
 
 export default async function Home() {
-  const compat = await currentOffer("synastry").catch(() => null);
-  const now = new Date();
-  const sky = PLANETS.map(p => ({ name: p, lon: lonOf(p, now), retrograde: speedOf(p, now) < 0 }));
-  const today = now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const compat = process.env.STRIPE_SECRET_KEY ? await currentOffer("synastry").catch(() => null) : null;
+  const founding = ONE_TIME.synastry.founding;
+  // Before Stripe is connected, assume all founding spots are open.
+  const compatPrice = compat ? compat.price : founding?.price ?? ONE_TIME.synastry.price;
+  const foundingLeft = compat ? compat.foundingLeft : founding?.limit ?? 0;
   return (
     <>
       <section className="wrap hero">
-        <div>
-          <h1>The sky doesn't repeat. Neither do you.</h1>
-          <p className="lede">Get your full natal chart free. Subscribe, and your personal timeline arrives every month on a surprise day, with the exact dates your biggest transits peak.</p>
-          <Link className="btn" href="/login?next=/onboarding">Get my free chart</Link>
+        <div className="hero-copy">
+          <h1>You know your Sun sign.</h1>
+          <p className="sub">Get to know what the rest of the sky says about you.</p>
+          <p className="support">Explore a comprehensive astrological chart based on the sky at the time and place you were born.</p>
+          <Link className="btn" href="/chart">Get my free chart</Link>
         </div>
-        <figure className="sky-now" style={{ margin: 0 }}>
-          <ChartWheel planets={sky} spin label={`The planets' positions on ${today}`} />
-          <figcaption>The sky right now, {today}. Every position is calculated, never guessed.</figcaption>
-        </figure>
+        <div className="hero-side">
+          <figure className="hero-art">
+            <picture>
+              <source srcSet="/art/armillary.webp" type="image/webp" />
+              <img src="/art/armillary.jpg" alt="A silver armillary sphere against a violet eclipse" width={598} height={805} />
+            </picture>
+          </figure>
+          <Link className="link-arrow signs-link" href="/signs">Explore all 12 signs →</Link>
+        </div>
       </section>
 
       <section className="wrap block">
-        <h2>How it works</h2>
-        <ol className="steps">
-          <li><h3>Enter your birth details</h3><p>Date, time and place. No birth time? You still get most of your chart.</p></li>
-          <li><h3>Read your free chart</h3><p>Your big three, chart ruler, every planet, aspects, patterns, points and harmonics.</p></li>
-          <li><h3>Your timeline arrives</h3><p>Once a month on a surprise day, with exact peak dates grouped into themes and windows.</p></li>
-          <li><h3>Compare charts with someone</h3><p>A compatibility report shows where you click, where you clash, and how your timelines line up.</p></li>
-        </ol>
+        <p className="kicker-italic">And what are those stars saying right now?</p>
+        <p className="hint" style={{ maxWidth: "30rem" }}>The planets keep moving after you're born. Your timeline shows when they touch your chart, down to the day.</p>
+        <Link className="link-arrow" href="/chart">Check your transits →</Link>
+      </section>
+
+      <section className="wrap block">
+        <div className="card meet">
+          <Orbits />
+          <h2>Now meet their chart ♡</h2>
+          <p>The Two of You puts both charts side by side: attraction, communication, friction and the patterns you keep repeating.</p>
+          <Link className="btn ghost small" href="#plans">See The Two of You</Link>
+        </div>
       </section>
 
       <section className="wrap block" id="plans">
-        <h2>Plans</h2>
-        <div className="plans">
-          {(Object.keys(TIERS) as Tier[]).map(t => {
-            const tier = TIERS[t];
+        <h2>Readings &amp; plans</h2>
+        <h3 className="group">One-time readings</h3>
+        <ul className="rows">
+          {ONE_TIME_ORDER.filter(k => ONE_TIME[k].enabled).map(k => {
+            const isCompat = k === "synastry";
+            const showFounding = isCompat && foundingLeft > 0;
             return (
-              <div key={t} className={`plan${t === "deep" ? " feature" : ""}`}>
-                <h3>{tier.label}</h3>
-                <p>{tier.blurb}</p>
-                <div className="price">{tier.price}</div>
-                {tier.yearlyPrice && <p className="hint" style={{ marginTop: -8 }}>or {tier.yearlyPrice}</p>}
-                <ul>{tier.perks.map(p => <li key={p}>{p}</li>)}</ul>
-                <Link className="btn" href={t === "free" ? "/login?next=/onboarding" : `/login?next=${encodeURIComponent(`/dashboard?plan=${t}`)}`}>
-                  {t === "free" ? "Get my free chart" : `Choose ${tier.label}`}
-                </Link>
-              </div>
-            );
-          })}
-        </div>
-        <h3 style={{ marginTop: 48 }}>Or buy once, no subscription. Delivered in minutes.</h3>
-        <ul className="once">
-          {(Object.keys(ONE_TIME) as OneTimeKey[]).filter(k => ONE_TIME[k].enabled).map(k => {
-            const founding = k === "synastry" && compat && compat.foundingLeft > 0;
-            return (
-              <li key={k}>
-                <span><strong>{ONE_TIME[k].label}</strong><br /><span className="hint">{ONE_TIME[k].blurb}</span>
-                  {founding && <><br /><span className="hint">Founding price for the first {ONE_TIME.synastry.founding!.limit} readers, {compat!.foundingLeft} left. Then {ONE_TIME[k].price}.</span></>}
-                </span>
-                <span className="price">{founding ? compat!.price : ONE_TIME[k].price}</span>
+              <li key={k} className={isCompat ? "featured" : undefined}>
+                <details open={isCompat}>
+                  <summary><span>{ONE_TIME[k].label}{isCompat && <span className="tag">Featured</span>}</span>
+                    <span className="row-price">{showFounding ? compatPrice : ONE_TIME[k].price}</span></summary>
+                  <div className="row-body">
+                    <p>{ONE_TIME[k].blurb}</p>
+                    {showFounding && <p className="hint">Founding price for the first {founding!.limit} readers{compat ? `, ${foundingLeft} left` : ""}. Then {ONE_TIME[k].price}.</p>}
+                    <Link className="btn small" href={`/login?next=${encodeURIComponent("/dashboard")}`}>{isCompat ? "Get The Two of You" : "Buy once"}</Link>
+                  </div>
+                </details>
               </li>
             );
           })}
         </ul>
-        <p className="hint" style={{ marginTop: 18 }}>Cancel any time from your account. {BRAND.name} is for entertainment and self-reflection.</p>
+        <h3 className="group">Memberships</h3>
+        <ul className="rows">
+          {(["timeline", "deep"] as const).map(t => {
+            const tier = TIERS[t];
+            return (
+              <li key={t}>
+                <details>
+                  <summary><span>{tier.label}</span><span className="row-price">{tier.price}</span></summary>
+                  <div className="row-body">
+                    <p>{PLAN_DETAIL[t]}</p>
+                    {tier.yearlyPrice && <p className="hint">or {tier.yearlyPrice}</p>}
+                    <ul className="perks">{tier.perks.map(p => <li key={p}>{p}</li>)}</ul>
+                    <Link className="btn small" href={`/login?next=${encodeURIComponent(`/dashboard?plan=${t}`)}`}>Choose {tier.label}</Link>
+                  </div>
+                </details>
+              </li>
+            );
+          })}
+        </ul>
+        <p className="hint" style={{ marginTop: 18 }}>Your birth chart is always free. Cancel memberships any time from your account. {BRAND.name} is for entertainment and self-reflection.</p>
+      </section>
+
+      <section className="wrap block">
+        <NewsletterSignup source="home" />
       </section>
     </>
   );
