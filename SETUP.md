@@ -122,3 +122,10 @@ The delivery scheduler runs on its own every 15 minutes (it's set in `vercel.jso
 - Audio versions of readings in a clone of your voice (ElevenLabs) for the top tier.
 - Your podcast on the homepage as a free preview.
 - A PDF download of each reading.
+
+## Your setup (filled in as we go)
+
+- GitHub repo: emilyrudich6-cpu/Astrology (Vercel has access to this repo only)
+- Vercel: team "emco" (Pro), project "astrology". Every push to `main` deploys automatically.
+- Supabase project: wbjuywqjbfdbeaxlyhrl (schema, 002 and 003 already run)
+- Stripe: "Astrology Deep Dives sandbox" (test mode). Products, prices and member portal created.
