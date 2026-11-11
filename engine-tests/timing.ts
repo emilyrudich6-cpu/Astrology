@@ -1,0 +1,12 @@
+import { natalChart } from "../lib/engine/natal";
+import { timing, synastry, timelinesTogether } from "../lib/engine/transits";
+const a = natalChart({ name: "Ava", date: "1990-06-15", time: "14:30", timezone: "America/Los_Angeles", latitude: 34.0522, longitude: -118.2437 });
+const b = natalChart({ name: "Ben", date: "1988-11-02", time: "07:05", timezone: "America/New_York", latitude: 40.7128, longitude: -74.006 });
+const t0 = Date.now();
+const start = new Date("2026-11-11T08:00:00Z"), end = new Date("2027-11-11T08:00:00Z");
+const tm = timing(a, start, end);
+const t1 = Date.now();
+const tog = timelinesTogether(a, b, start, end);
+const t2 = Date.now();
+console.error("timing ms", t1 - t0, "together ms", t2 - t1, "events", tm.exactTransits.length);
+console.log(JSON.stringify({ natal: a.planets.map(p=>({n:p.name,lon:p.lon})), asc: a.angles![0].lon, mc: a.angles![1].lon, nn: a.points[0].lon, tm, syn: synastry(a,b), tog }));

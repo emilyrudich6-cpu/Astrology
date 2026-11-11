@@ -1,0 +1,12 @@
+import { natalChart } from "../lib/engine/natal";
+import { timing, synastry, timelinesTogether } from "../lib/engine/transits";
+const noTime = natalChart({ name: "NoTime", date: "1975-02-28", time: null, timezone: "Europe/London", latitude: 51.5, longitude: -0.12 });
+const polar = natalChart({ name: "Polar", date: "1995-12-21", time: "03:00", timezone: "Europe/Oslo", latitude: 69.65, longitude: 18.96 });
+const dst = natalChart({ name: "DST", date: "1980-07-04", time: "02:30", timezone: "America/New_York", latitude: 40.7, longitude: -74 });
+console.log(noTime.warnings, noTime.houseSystem, noTime.bigThree, noTime.chartRuler);
+console.log(polar.warnings, polar.houseSystem, polar.bigThree.ascendant);
+console.log(dst.birth.utc, dst.birth.utcOffset);
+const s = new Date(), e = new Date(Date.now() + 365 * 864e5);
+const t = timing(noTime, s, e); console.log("noTime timing ok", t.exactTransits.length, t.sky.lunations[0]);
+console.log("syn", synastry(noTime, polar).houseOverlays);
+console.log("together", timelinesTogether(noTime, polar, s, e).busiestMonthsForBoth.length);
