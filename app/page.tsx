@@ -1,7 +1,7 @@
 import Link from "next/link";
 import ChartWheel from "@/components/ChartWheel";
 import { PLANETS, lonOf, speedOf } from "@/lib/engine/core";
-import { BRAND, TIERS, Tier } from "@/lib/config";
+import { BRAND, TIERS, Tier, ONE_TIME, OneTimeKey } from "@/lib/config";
 
 export const revalidate = 3600; // redraw the live sky every hour
 
@@ -43,6 +43,7 @@ export default function Home() {
                 <h3>{tier.label}</h3>
                 <p>{tier.blurb}</p>
                 <div className="price">{tier.price}</div>
+                {tier.yearlyPrice && <p className="hint" style={{ marginTop: -8 }}>or {tier.yearlyPrice}</p>}
                 <ul>{tier.perks.map(p => <li key={p}>{p}</li>)}</ul>
                 <Link className="btn" href={t === "free" ? "/login?next=/onboarding" : `/login?next=${encodeURIComponent(`/dashboard?plan=${t}`)}`}>
                   {t === "free" ? "Get my free chart" : `Choose ${tier.label}`}
@@ -51,6 +52,12 @@ export default function Home() {
             );
           })}
         </div>
+        <h3 style={{ marginTop: 48 }}>Or buy once, no subscription</h3>
+        <ul className="once">
+          {(Object.keys(ONE_TIME) as OneTimeKey[]).filter(k => ONE_TIME[k].enabled).map(k => (
+            <li key={k}><span><strong>{ONE_TIME[k].label}</strong><br /><span className="hint">{ONE_TIME[k].blurb}</span></span><span className="price">{ONE_TIME[k].price}</span></li>
+          ))}
+        </ul>
         <p className="hint" style={{ marginTop: 18 }}>Cancel any time from your account. {BRAND.name} is for entertainment and self-reflection.</p>
       </section>
     </>

@@ -146,3 +146,21 @@ export async function synastryReading(member: BirthData, other: BirthData, relat
   );
   return { kind: "synastry" as const, title, body };
 }
+
+/** ONE-TIME: a 12-month timeline (step 8 + 10) */
+export async function yearAheadTimeline(b: BirthData, now = new Date()) {
+  const c = natalChart(b);
+  const end = addDays(now, 365);
+  const year = timing(c, now, end, { bodies: ["Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"] });
+  const title = `Your Year Ahead: ${fmtDay(now)} to ${fmtDay(end)}`;
+  const body = await write(
+    `Write ${c.name}'s year-ahead timeline for ${fmtDay(now)} to ${fmtDay(end)}. Follow step 8: open briefly with today's transits ` +
+    `(year.today), then map the year: the key windows (year.grouped.keyWindows) with every exact peak date including retrograde passes, ` +
+    `grouped into themes (year.grouped.themes) and a month-by-month guide (year.grouped.months, lead with the heaviest). Include eclipses, ` +
+    `stations on natal points and house ingresses from year.sky. Finish with step 10: the year's themes and a ritual tied to the next key date. Title: "${title}".`,
+    { natalSummary: { bigThree: c.bigThree, chartRuler: c.chartRuler, planets: c.planets, angles: c.angles, warnings: c.warnings },
+      year: { ...year, exactTransits: year.exactTransits.filter(e => e.weight >= 3) } },
+    12000,
+  );
+  return { kind: "yearahead" as const, title, body };
+}

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 
 type Cat = { key: string; label: string; emoji: string; questions: string[] };
 
-export default function AskQuestion({ menu, remaining, perMonth }: { menu: Cat[]; remaining: number; perMonth: number }) {
+export default function AskQuestion({ menu, remaining, perMonth, buyPrice }: { menu: Cat[]; remaining: number; perMonth: number; buyPrice?: string }) {
   const [cat, setCat] = useState<string | null>(null);
   const [q, setQ] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -12,7 +12,16 @@ export default function AskQuestion({ menu, remaining, perMonth }: { menu: Cat[]
   const router = useRouter();
   const current = menu.find(m => m.key === cat);
 
-  if (remaining <= 0) return <p className="hint">You've asked all {perMonth} of this month's questions. New ones open on the 1st.</p>;
+  const buying = remaining <= 0;
+  if (buying && !buyPrice) return <p className="hint">You've asked all {perMonth} of this month's questions. New ones open on the 1st.</p>;
+
+  async function buy() {
+    setBusy(true); setMsg("");
+    const r = await fetch("/api/buy", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ product: "question", category: cat, question: q }) });
+    const j = await r.json().catch(() => ({}));
+    setBusy(false);
+    if (j.url) location.href = j.url; else setMsg(j.error ?? "Couldn't open checkout. Try again.");
+  }
 
   async function ask() {
     setBusy(true); setMsg("");
@@ -26,7 +35,9 @@ export default function AskQuestion({ menu, remaining, perMonth }: { menu: Cat[]
 
   return (
     <div>
-      <p className="hint">{remaining} of {perMonth} left this month. Pick an area, then the question.</p>
+      <p className="hint">{buying
+        ? (perMonth > 0 ? `You've used this month's ${perMonth} questions. Buy one more for ${buyPrice}: pick an area, then the question.` : `Ask one question for ${buyPrice}. Pick an area, then the question.`)
+        : `${remaining} of ${perMonth} left this month. Pick an area, then the question.`}</p>
       <div className="cats" role="group" aria-label="Question area">
         {menu.map(m => (
           <button key={m.key} className="chip" aria-pressed={cat === m.key} onClick={() => { setCat(m.key); setQ(null); setMsg(""); }}>
@@ -39,7 +50,8 @@ export default function AskQuestion({ menu, remaining, perMonth }: { menu: Cat[]
           {current.questions.map(x => <button key={x} className="qopt" aria-pressed={q === x} onClick={() => setQ(x)}>{x}</button>)}
         </div>
       )}
-      {q && <button className="btn" disabled={busy} onClick={ask}>{busy ? "Sending…" : "Ask this question"}</button>}
+      {q && !buying && <button className="btn" disabled={busy} onClick={ask}>{busy ? "Sending…" : "Ask this question"}</button>}
+      {q && buying && <button className="btn" disabled={busy} onClick={buy}>{busy ? "Opening checkout…" : `Buy this answer, ${buyPrice}`}</button>}
       {msg && <p className="hint" role="status" style={{ marginTop: 12 }}>{msg}</p>}
     </div>
   );

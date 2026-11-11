@@ -4,18 +4,19 @@ import ChartWheel from "@/components/ChartWheel";
 import AskQuestion from "@/components/AskQuestion";
 import People from "@/components/People";
 import PushButton from "@/components/PushButton";
-import { CheckoutButton, ManageBillingButton } from "@/components/BillingButtons";
+import { CheckoutButton, ManageBillingButton, BuyButton } from "@/components/BillingButtons";
+import BuyCompatibility from "@/components/BuyCompatibility";
+import { planUsedThisMonth } from "@/lib/quota";
 import AutoRefresh from "@/components/AutoRefresh";
 import { currentUser, supabaseAdmin } from "@/lib/supabase";
 import { natalChart } from "@/lib/engine/natal";
 import { birthFromRow } from "@/lib/pipeline";
-import { startOfMemberMonth } from "@/lib/schedule";
-import { TIERS, Tier, QUESTION_MENU } from "@/lib/config";
+import { TIERS, Tier, QUESTION_MENU, ONE_TIME } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
-export default async function Dashboard({ searchParams }: { searchParams: Promise<{ plan?: string; upgraded?: string }> }) {
-  const { plan, upgraded } = await searchParams;
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ plan?: string; upgraded?: string; bought?: string }> }) {
+  const { plan, upgraded, bought } = await searchParams;
   const user = await currentUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/dashboard${plan ? `?plan=${plan}` : ""}`)}`);
   const db = supabaseAdmin();
@@ -28,14 +29,13 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const delivered = (readings ?? []).filter(r => r.delivered_at).sort((a, b) => b.delivered_at!.localeCompare(a.delivered_at!));
   const onTheWay = (readings ?? []).filter(r => !r.delivered_at && r.status !== "failed");
   const natalPending = onTheWay.some(r => r.kind === "natal");
-  const monthStart = startOfMemberMonth(profile.timezone);
-  const askedThisMonth = (readings ?? []).filter(r => r.kind === "question" && r.created_at >= monthStart).length;
-  const { data: people } = await db.from("people").select("id,name,relationship").eq("user_id", user.id).order("created_at");
+  const askedThisMonth = await planUsedThisMonth(user.id, profile.timezone, "question");
+  const { data: people } = await db.from("people").select("id,name,relationship").eq("user_id", user.id).eq("purchased", false).order("created_at");
 
   const chart = natalChart(birthFromRow(profile));
   const wantPlan = plan === "timeline" || plan === "deep" ? plan : null;
   const fmt = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: profile.timezone });
-  const kindLabel: Record<string, string> = { natal: "your free chart", timeline: "your monthly timeline", question: "an answer to your question", synastry: "a compatibility reading" };
+  const kindLabel: Record<string, string> = { natal: "your free chart", timeline: "your monthly timeline", question: "an answer to your question", synastry: "a compatibility reading", yearahead: "your year-ahead timeline" };
 
   return (
     <div className="wrap dash">
@@ -54,7 +54,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
               <p className="hint">Upgrade for a monthly timeline{" "}or questions answered on surprise days.</p>
               <div style={{ display: "grid", gap: 10 }}>
                 <CheckoutButton tier="timeline" label={`Timeline, ${TIERS.timeline.price}`} />
+                <CheckoutButton tier="timeline" interval="year" ghost label={`Timeline, ${TIERS.timeline.yearlyPrice}`} />
                 <CheckoutButton tier="deep" label={`Deep Dive, ${TIERS.deep.price}`} />
+                <CheckoutButton tier="deep" interval="year" ghost label={`Deep Dive, ${TIERS.deep.yearlyPrice}`} />
               </div>
             </>
           ) : (
@@ -73,11 +75,15 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       <div>
         {upgraded && <div className="notice">You're in. Your first timeline arrives within the next three days, on a surprise day.</div>}
+        {bought && <div className="notice">Payment received. Your {ONE_TIME[bought as keyof typeof ONE_TIME]?.label.toLowerCase() ?? "reading"} is on its way and arrives on a surprise day.</div>}
         {wantPlan && profile.tier === "free" && (
           <div className="panel">
             <h3>Finish choosing {TIERS[wantPlan].label}</h3>
             <p>{TIERS[wantPlan].blurb}</p>
-            <CheckoutButton tier={wantPlan} label={`Continue to payment, ${TIERS[wantPlan].price}`} />
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <CheckoutButton tier={wantPlan} label={`Pay monthly, ${TIERS[wantPlan].price}`} />
+              <CheckoutButton tier={wantPlan} interval="year" ghost label={`Pay yearly, ${TIERS[wantPlan].yearlyPrice}`} />
+            </div>
           </div>
         )}
 
@@ -100,8 +106,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
         <section className="panel" style={{ marginTop: 32 }}>
           <h3>Ask a question</h3>
-          {tier.questionsPerMonth > 0 ? (
-            <AskQuestion menu={QUESTION_MENU} remaining={Math.max(0, tier.questionsPerMonth - askedThisMonth)} perMonth={tier.questionsPerMonth} />
+          {tier.questionsPerMonth > 0 || ONE_TIME.question.enabled ? (
+            <AskQuestion menu={QUESTION_MENU} remaining={Math.max(0, tier.questionsPerMonth - askedThisMonth)} perMonth={tier.questionsPerMonth}
+              buyPrice={ONE_TIME.question.enabled ? ONE_TIME.question.price : undefined} />
           ) : (
             <p className="hint">Deep Dive members pick {TIERS.deep.questionsPerMonth} questions a month from the menu and get answers on surprise days.</p>
           )}
@@ -111,10 +118,23 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <h3>Compatibility</h3>
           {tier.savedPeople > 0 ? (
             <People people={people ?? []} max={tier.savedPeople} />
+          ) : ONE_TIME.synastry.enabled ? (
+            <>
+              <p className="hint">{ONE_TIME.synastry.blurb} Deep Dive members get {TIERS.deep.savedPeople} a month included.</p>
+              <BuyCompatibility price={ONE_TIME.synastry.price} />
+            </>
           ) : (
             <p className="hint">Deep Dive members can save up to {TIERS.deep.savedPeople} people and get a compatibility reading with how your timelines line up over the next year.</p>
           )}
         </section>
+
+        {ONE_TIME.yearahead.enabled && (
+          <section className="panel">
+            <h3>{ONE_TIME.yearahead.label}</h3>
+            <p className="hint">{ONE_TIME.yearahead.blurb}</p>
+            <BuyButton product="yearahead" label={`Get my year ahead, ${ONE_TIME.yearahead.price}`} />
+          </section>
+        )}
       </div>
     </div>
   );

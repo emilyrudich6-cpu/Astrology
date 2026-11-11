@@ -7,6 +7,8 @@ You don't need to code. You'll make a few accounts, copy keys from each into one
 - **Free plan:** a member signs in with their email, enters their birth details and gets a full natal chart deep dive (steps 1–7 and 10 of your method, plus a teaser of their next 3 key dates). It's written in about two minutes.
 - **Timeline plan:** a monthly timeline lands on a random day each month, covering the next 30 days with exact transit peak dates, themes, windows, lunations, eclipses, stations and a ritual.
 - **Deep Dive plan:** everything above, plus 3 questions a month picked from a menu (category, then a specific question). Each answer arrives on a surprise day 2–9 days later, between 10am and 8pm in the member's time zone. Members can also save up to 2 people and get compatibility readings (synastry, house overlays both ways, how their timelines interact over the next year).
+- **One-time purchases** for anyone, subscribed or not: a single question, a compatibility reading, or a year-ahead timeline. Each arrives on a surprise day. Turn each one on or off and set its price in `lib/config.ts`.
+- Both plans can also be paid yearly.
 - Members get an email and, if they turn them on, phone notifications when a reading arrives.
 - You get a private **Admin** page that shows every member and reading. From it you can retry a failed reading, or send any reading immediately for testing.
 
@@ -27,7 +29,7 @@ All astronomy is calculated in code: planets, houses, nodes, Lilith, transits an
 ## Step 1: Supabase (logins and database)
 
 1. Create a project at supabase.com. Save the database password somewhere safe.
-2. Go to **SQL Editor > New query**, paste everything in `supabase/schema.sql` and click **Run**.
+2. Go to **SQL Editor > New query**, paste everything in `supabase/schema.sql` and click **Run**. Then do the same with `supabase/002_one_time_purchases.sql`. (Both are already done on your project.)
 3. Go to **Authentication > Email Templates > Magic Link** and make sure the email includes the code. Add a line like `Your sign-in code: {{ .Token }}`. Members can type the code or tap the link.
 4. Go to **Authentication > URL Configuration**. Set **Site URL** to `https://yourdomain.com` and add `https://yourdomain.com/auth/callback` under Redirect URLs.
 5. Go to **Authentication > SMTP Settings** and turn on custom SMTP using Resend's details (see step 4). Supabase's built-in email only sends a few emails an hour.
@@ -37,7 +39,14 @@ All astronomy is calculated in code: planets, houses, nodes, Lilith, transits an
 
 Start in **Test mode** (toggle at the top).
 
-1. Go to **Product catalog > Add product** and make two monthly products: "Timeline" at $12 and "Deep Dive" at $29, or whatever prices you choose. Copy each one's **Price ID** (it starts with `price_`).
+1. Go to **Product catalog > Add product** and make:
+   - "Timeline": a recurring price of $12 per month **and** a second recurring price of $108 per year
+   - "Deep Dive": $29 per month **and** $260 per year
+   - "Single question": a one-time price of $9
+   - "Compatibility reading": a one-time price of $15
+   - "Year-ahead timeline": a one-time price of $19
+
+   Copy each **Price ID** (it starts with `price_`). They go in the `STRIPE_PRICE_...` settings in Vercel.
 2. Go to **Settings > Billing > Customer portal**. Turn on cancellations and let customers switch between your two products.
 3. Go to **Developers > Webhooks > Add endpoint**. Use the URL `https://yourdomain.com/api/stripe/webhook` and these events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. Copy the **Signing secret** (`whsec_...`).
 4. Go to **Developers > API keys** and copy the **Secret key**.

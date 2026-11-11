@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 
 type Place = { label: string; latitude: number; longitude: number; timezone: string };
 
-export default function BirthForm({ endpoint, submitLabel, withRelationship = false, initial, onDone }: {
-  endpoint: string; submitLabel: string; withRelationship?: boolean;
+export default function BirthForm({ endpoint, submitLabel, withRelationship = false, initial, onDone, extra }: {
+  endpoint: string; submitLabel: string; withRelationship?: boolean; extra?: Record<string, string>;
   initial?: Partial<{ name: string; birth_date: string; birth_time: string | null; birth_place: string; latitude: number; longitude: number; timezone: string }>;
   onDone?: () => void;
 }) {
@@ -36,11 +36,12 @@ export default function BirthForm({ endpoint, submitLabel, withRelationship = fa
     setBusy(true);
     const r = await fetch(endpoint, {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, relationship, birth_date: date, birth_time: noTime ? null : time || null, birth_place: place.label, latitude: place.latitude, longitude: place.longitude, timezone: place.timezone }),
+      body: JSON.stringify({ ...extra, name, relationship, birth_date: date, birth_time: noTime ? null : time || null, birth_place: place.label, latitude: place.latitude, longitude: place.longitude, timezone: place.timezone }),
     });
     setBusy(false);
     const j = await r.json().catch(() => ({}));
     if (!r.ok) { setErr(j.error ?? "Something went wrong. Try again."); return; }
+    if (j.url) { location.href = j.url; return; }
     if (onDone) onDone(); else if (j.redirect) location.href = j.redirect;
   }
 

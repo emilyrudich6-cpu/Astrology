@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { currentUser, supabaseAdmin } from "@/lib/supabase";
 import { QUESTION_MENU, TIERS, Tier } from "@/lib/config";
-import { surpriseDeliveryTime, startOfMemberMonth } from "@/lib/schedule";
+import { surpriseDeliveryTime } from "@/lib/schedule";
+import { planUsedThisMonth } from "@/lib/quota";
 
 export async function POST(req: Request) {
   const user = await currentUser();
@@ -13,9 +14,8 @@ export async function POST(req: Request) {
   const { data: p } = await db.from("profiles").select("tier,timezone").eq("id", user.id).single();
   const allowed = p ? TIERS[p.tier as Tier].questionsPerMonth : 0;
   if (!allowed) return NextResponse.json({ error: "Questions are part of the Deep Dive plan." }, { status: 403 });
-  const { count } = await db.from("readings").select("id", { count: "exact", head: true })
-    .eq("user_id", user.id).eq("kind", "question").gte("created_at", startOfMemberMonth(p!.timezone));
-  if ((count ?? 0) >= allowed) return NextResponse.json({ error: `You've asked all ${allowed} questions for this month.` }, { status: 429 });
+  const used = await planUsedThisMonth(user.id, p!.timezone, "question");
+  if (used >= allowed) return NextResponse.json({ error: `You've asked all ${allowed} questions for this month.` }, { status: 429 });
   await db.from("readings").insert({
     user_id: user.id, kind: "question", category: cat.key, question, title: question,
     deliver_at: surpriseDeliveryTime(p!.timezone).toISOString(),

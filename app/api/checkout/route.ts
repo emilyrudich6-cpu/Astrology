@@ -6,8 +6,8 @@ import { Tier } from "@/lib/config";
 export async function POST(req: Request) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
-  const { tier } = await req.json().catch(() => ({}));
-  const price = tier === "timeline" || tier === "deep" ? priceFor(tier as Tier) : undefined;
+  const { tier, interval } = await req.json().catch(() => ({}));
+  const price = tier === "timeline" || tier === "deep" ? priceFor(tier as Tier, interval === "year" ? "year" : "month") : undefined;
   if (!price || !process.env.STRIPE_SECRET_KEY) return NextResponse.json({ error: "Payments aren't set up yet." }, { status: 400 });
   const db = supabaseAdmin();
   const { data: p } = await db.from("profiles").select("stripe_customer_id,stripe_subscription_id,tier").eq("id", user.id).single();
