@@ -10,7 +10,7 @@ import { planUsedThisMonth } from "@/lib/quota";
 import { currentOffer } from "@/lib/stripe";
 import AutoRefresh from "@/components/AutoRefresh";
 import StartFullChart from "@/components/StartFullChart";
-import { currentUser, supabaseAdmin } from "@/lib/supabase";
+import { currentUser, supabaseAdmin, isAdmin } from "@/lib/supabase";
 import { natalChart } from "@/lib/engine/natal";
 import { birthFromRow } from "@/lib/pipeline";
 import { TIERS, Tier, QUESTION_MENU, ONE_TIME } from "@/lib/config";
@@ -113,7 +113,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           ))}
         </ul>
 
-        {tier.fullChart && !hasFullChart && (
+        {(tier.fullChart || isAdmin(user.email)) && !hasFullChart && (
           <section className="panel" style={{ marginTop: 32 }}>
             <h3>Your Full Chart</h3>
             <p className="hint">Your whole chart, planet by planet, with fixed stars, progressions, Human Design and a two-year timeline of exact dates. It's included in your membership.</p>
