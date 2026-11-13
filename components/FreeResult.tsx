@@ -69,7 +69,7 @@ export function TopicInsight({ b }: { b: string }) {
         <div className="follow">
           <p className="kicker-italic small rose">Is there someone you had in mind? ♡</p>
           <p className="hint">The Two of You puts your chart next to theirs: attraction, communication, friction, and when your timelines line up.</p>
-          <Link className="btn small" href="/#plans">Compare our charts</Link>
+          <Link className="btn small" href="/two-of-you">Compare our charts</Link>
         </div>
       )}
       {topic && topic !== "love" && !busy && (

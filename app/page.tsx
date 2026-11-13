@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { BRAND, TIERS, Tier, ONE_TIME, OneTimeKey } from "@/lib/config";
-import { currentOffer } from "@/lib/stripe";
 import NewsletterSignup from "@/components/NewsletterSignup";
 
 export const revalidate = 3600;
 
 const PLAN_DETAIL: Record<Exclude<Tier, "free">, string> = {
   timeline: "Every month, on a surprise day, your timeline arrives with the exact dates your biggest transits peak.",
-  deep: "Your monthly timeline plus guided questions about it, saved people and compatibility.",
+  deep: "Your monthly timeline, 2 questions a month, and compatibility readings with anyone you add to Your People.",
 };
 const ONE_TIME_ORDER: OneTimeKey[] = ["synastry", "question", "yearahead"];
 
@@ -21,11 +20,6 @@ function Orbits() {
 }
 
 export default async function Home() {
-  const compat = process.env.STRIPE_SECRET_KEY ? await currentOffer("synastry").catch(() => null) : null;
-  const founding = ONE_TIME.synastry.founding;
-  // Before Stripe is connected, assume all founding spots are open.
-  const compatPrice = compat ? compat.price : founding?.price ?? ONE_TIME.synastry.price;
-  const foundingLeft = compat ? compat.foundingLeft : founding?.limit ?? 0;
   return (
     <>
       <section className="wrap hero">
@@ -57,7 +51,7 @@ export default async function Home() {
           <Orbits />
           <h2>Now meet their chart ♡</h2>
           <p>The Two of You puts both charts side by side: attraction, communication, friction and the patterns you keep repeating.</p>
-          <Link className="btn ghost small" href="#plans">See The Two of You</Link>
+          <Link className="btn ghost small" href="/two-of-you">See an example</Link>
         </div>
       </section>
 
@@ -67,15 +61,14 @@ export default async function Home() {
         <ul className="rows">
           {ONE_TIME_ORDER.filter(k => ONE_TIME[k].enabled).map(k => {
             const isCompat = k === "synastry";
-            const showFounding = isCompat && foundingLeft > 0;
             return (
               <li key={k} className={isCompat ? "featured" : undefined}>
                 <details open={isCompat}>
                   <summary><span>{ONE_TIME[k].label}{isCompat && <span className="tag">Featured</span>}</span>
-                    <span className="row-price">{showFounding ? compatPrice : ONE_TIME[k].price}</span></summary>
+                    <span className="row-price">{ONE_TIME[k].price}</span></summary>
                   <div className="row-body">
                     <p>{ONE_TIME[k].blurb}</p>
-                    {showFounding && <p className="hint">Founding price for the first {founding!.limit} readers{compat ? `, ${foundingLeft} left` : ""}. Then {ONE_TIME[k].price}.</p>}
+                    {isCompat && <p className="hint"><Link href="/two-of-you">Read a full example</Link></p>}
                     <Link className="btn small" href={`/login?next=${encodeURIComponent("/dashboard")}`}>{isCompat ? "Get The Two of You" : "Buy once"}</Link>
                   </div>
                 </details>
@@ -90,7 +83,7 @@ export default async function Home() {
             return (
               <li key={t}>
                 <details>
-                  <summary><span>{tier.label}</span><span className="row-price">{tier.price}</span></summary>
+                  <summary><span>{tier.label}<span className="row-sub">{t === "deep" ? `Timeline, ${tier.compatPerMonth} compatibility readings and ${tier.questionsPerMonth} questions a month` : "Your personal timeline every month"}</span></span><span className="row-price">{tier.price}</span></summary>
                   <div className="row-body">
                     <p>{PLAN_DETAIL[t]}</p>
                     {tier.yearlyPrice && <p className="hint">or {tier.yearlyPrice}</p>}

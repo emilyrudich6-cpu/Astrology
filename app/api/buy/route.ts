@@ -18,8 +18,9 @@ export async function POST(req: Request) {
   if (!price) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
 
   const db = supabaseAdmin();
-  const { data: p } = await db.from("profiles").select("stripe_customer_id,birth_date").eq("id", user.id).single();
+  const { data: p } = await db.from("profiles").select("stripe_customer_id,birth_date,tier").eq("id", user.id).single();
   if (!p?.birth_date) return NextResponse.json({ error: "Add your birth details first." }, { status: 400 });
+  if (ONE_TIME[product].membersOnly && p.tier !== "deep") return NextResponse.json({ error: "Extra readings are for Deep Dive members." }, { status: 403 });
 
   const metadata: Record<string, string> = { user_id: user.id, product };
   if (product === "question") {
@@ -33,6 +34,12 @@ export async function POST(req: Request) {
     const relationship = RELATIONSHIPS.includes(body.relationship) ? body.relationship : "partner";
     const { data: person } = await db.from("people").insert({ user_id: user.id, relationship, purchased: true, ...parsed.value }).select("id").single();
     if (!person) return NextResponse.json({ error: "Couldn't save their details. Try again." }, { status: 500 });
+    metadata.person_id = person.id;
+  }
+
+  if (product === "extra") {
+    const { data: person } = await db.from("people").select("id").eq("id", body.person_id).eq("user_id", user.id).maybeSingle();
+    if (!person) return NextResponse.json({ error: "Choose someone from Your People." }, { status: 400 });
     metadata.person_id = person.id;
   }
 

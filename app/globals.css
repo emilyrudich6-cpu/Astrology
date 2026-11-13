@@ -266,3 +266,26 @@ h3.group { font-family: var(--display); font-style: italic; font-weight: 400; co
 .placements.houses li { align-items: flex-start; }
 .placements.houses strong { font-weight: 500; display: block; }
 .placements.houses .theme { display: block; font-size: .8rem; color: var(--muted); margin-top: 2px; }
+/* The Two of You: midnight blue and brass */
+.duo { --midnight: #0e1630; --midnight-2: #16213f; --brass: #c2a06a; background: radial-gradient(ellipse at 50% 0%, #1b2a55 0%, var(--midnight) 60%); margin-top: -8px; padding-bottom: 40px; }
+.duo-hero { padding-top: 30px; text-align: center; }
+.duo-kicker { font-family: var(--display); font-style: italic; color: var(--brass); font-size: 1.15rem; margin: 0; }
+.duo h1 { font-size: var(--step-3); margin: .1em 0 .3em; }
+.duo .support { color: var(--silver); max-width: 30rem; margin-inline: auto; }
+.duo-wheels { position: relative; height: 290px; margin: 26px auto 10px; max-width: 420px; }
+.duo-wheels .w1, .duo-wheels .w2 { position: absolute; top: 0; width: 64%; }
+.duo-wheels .w1 { left: 0; opacity: .9; }
+.duo-wheels .w2 { right: 0; top: 34px; opacity: .75; mix-blend-mode: screen; filter: sepia(.6) saturate(1.4) hue-rotate(-10deg); }
+.btn.brass { background: var(--brass); color: #1a1408; }
+.duo-cta .hint { max-width: 26rem; margin: 10px auto 0; }
+.duo-example { padding-top: 34px; }
+.duo-label { font-size: .8rem; color: var(--brass); border: 1px solid #3a4268; border-radius: 12px; display: inline-block; padding: 6px 12px; }
+.duo-example h2 { font-style: italic; font-size: var(--step-2); margin-top: 12px; }
+.duo-sec { border-top: 1px solid #2a3560; padding-top: 18px; margin-top: 18px; }
+.duo-sec h3 { color: var(--brass); font-style: italic; font-weight: 400; font-size: 1.35rem; }
+.duo-sec p { color: var(--silver); }
+.people { list-style: none; padding: 0; margin: 12px 0; }
+.people li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.people strong { font-weight: 500; color: var(--paper); }
+.people-actions { display: flex; gap: 6px; }
+.row-sub { display: block; font-size: .8rem; color: var(--muted); margin-top: 2px; }

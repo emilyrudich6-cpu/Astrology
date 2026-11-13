@@ -171,7 +171,7 @@ export default async function Result({ searchParams }: { searchParams: Promise<{
           </svg>
           <h3>Now meet their chart ♡</h3>
           <p>The Two of You puts both charts side by side: attraction, communication, friction and the patterns you keep repeating.</p>
-          <Link className="btn ghost small" href="/#plans">See The Two of You</Link>
+          <Link className="btn ghost small" href="/two-of-you">See an example</Link>
         </div>
       </section>
     </div>

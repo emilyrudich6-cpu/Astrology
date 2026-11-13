@@ -35,6 +35,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const bonusUntil = profile.tier === "free" && profile.bonus_timeline_until && new Date(profile.bonus_timeline_until) > new Date()
     ? new Date(profile.bonus_timeline_until) : null;
   const askedThisMonth = await planUsedThisMonth(user.id, profile.timezone, "question");
+  const compatThisMonth = tier.compatPerMonth ? await planUsedThisMonth(user.id, profile.timezone, "synastry") : 0;
   const { data: people } = await db.from("people").select("id,name,relationship").eq("user_id", user.id).eq("purchased", false).order("created_at");
 
   const chart = natalChart(birthFromRow(profile));
@@ -56,7 +57,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <h3>Your plan: {tier.label}</h3>
           {profile.tier === "free" ? (
             <>
-              <p className="hint">Upgrade for a monthly timeline{" "}or questions answered on surprise days.</p>
+              <p className="hint">Upgrade for a monthly timeline, or Deep Dive for questions and compatibility with anyone you add.</p>
               <div style={{ display: "grid", gap: 10 }}>
                 <CheckoutButton tier="timeline" label={`Timeline, ${TIERS.timeline.price}`} />
                 <CheckoutButton tier="timeline" interval="year" ghost label={`Timeline, ${TIERS.timeline.yearlyPrice}`} />
@@ -121,13 +122,14 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         </section>
 
         <section className="panel">
-          <h3>{ONE_TIME.synastry.label}</h3>
-          {tier.savedPeople > 0 ? (
-            <People people={people ?? []} max={tier.savedPeople} />
+          <h3>{tier.compatPerMonth > 0 ? "Your People" : ONE_TIME.synastry.label}</h3>
+          {tier.compatPerMonth > 0 ? (
+            <People people={people ?? []} max={tier.savedPeople} perMonth={tier.compatPerMonth}
+              remaining={Math.max(0, tier.compatPerMonth - compatThisMonth)} extraPrice={ONE_TIME.extra.price} />
           ) : compat ? (
             <>
               <p className="hint">{ONE_TIME.synastry.blurb}</p>
-              {compat.foundingLeft > 0 && <p className="hint">Founding price: {compat.price} for the first {ONE_TIME.synastry.founding!.limit} readers ({compat.foundingLeft} left), then {compat.regular}.</p>}
+              <p className="hint">Or get {TIERS.deep.compatPerMonth} compatibility readings every month with <Link href="/dashboard?plan=deep">Deep Dive, {TIERS.deep.price}</Link>.</p>
               <BuyCompatibility price={compat.price} />
             </>
           ) : (

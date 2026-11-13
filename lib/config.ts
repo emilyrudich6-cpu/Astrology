@@ -16,6 +16,7 @@ export type Interval = "month" | "year";
 export const TIERS: Record<Tier, {
   label: string; price: string; blurb: string; perks: string[];
   monthlyTimeline: boolean; questionsPerMonth: number; savedPeople: number;
+  compatPerMonth: number;         // compatibility readings included each month (with saved people)
   stripeLookupKey?: string;       // Stripe price lookup key, monthly
   yearlyPrice?: string;           // shown on the site
   stripeYearlyLookupKey?: string; // Stripe price lookup key, yearly
@@ -23,20 +24,19 @@ export const TIERS: Record<Tier, {
   free: {
     label: "Free", price: "$0", blurb: "Your full natal chart deep dive.",
     perks: ["Big three, chart ruler and angles", "Every planet: house, speed, declination", "Aspects, patterns, chart shape", "Nodes, Lilith, Part of Fortune and harmonics"],
-    monthlyTimeline: false, questionsPerMonth: 0, savedPeople: 0,
+    monthlyTimeline: false, questionsPerMonth: 0, savedPeople: 0, compatPerMonth: 0,
   },
   timeline: {
     label: "Timeline", price: "$9 / month", blurb: "Your personal timeline, every month.",
     perks: ["Everything in Free", "A monthly timeline with exact transit peak dates", "Themes and power windows for the month", "A manifestation ritual tied to your next key date"],
-    monthlyTimeline: true, questionsPerMonth: 0, savedPeople: 0,
+    monthlyTimeline: true, questionsPerMonth: 0, savedPeople: 0, compatPerMonth: 0,
     stripeLookupKey: "timeline_monthly",
     yearlyPrice: "$90 / year (2 months free)", stripeYearlyLookupKey: "timeline_yearly",
   },
   deep: {
-    label: "Deep Dive", price: "$19 / month", blurb: "Timeline plus your questions answered.",
-    // Other people's charts and timelines come only with The Two of You (one-time), not with this plan.
-    perks: ["Everything in Timeline", "2 questions a month, answered on a surprise day", "Pick your questions from a guided menu: love, work, money, home, friends, growth"],
-    monthlyTimeline: true, questionsPerMonth: 2, savedPeople: 0,
+    label: "Deep Dive", price: "$19 / month", blurb: "Your timeline, your questions, and compatibility with anyone you add.",
+    perks: ["Everything in Timeline", "5 compatibility readings a month with anyone you add to Your People", "2 questions a month about your timeline, answered on a surprise day", "Extra compatibility readings $3.99 each"],
+    monthlyTimeline: true, questionsPerMonth: 2, savedPeople: 30, compatPerMonth: 5,
     stripeLookupKey: "deep_monthly",
     yearlyPrice: "$190 / year (2 months free)", stripeYearlyLookupKey: "deep_yearly",
   },
@@ -44,20 +44,21 @@ export const TIERS: Record<Tier, {
 
 /** One-time purchases for anyone signed in, subscribed or not. They arrive right away (about 2 minutes).
  *  Set enabled: false to hide one. */
-export type OneTimeKey = "question" | "synastry" | "yearahead";
+export type OneTimeKey = "question" | "synastry" | "yearahead" | "extra";
 export const ONE_TIME: Record<OneTimeKey, {
   enabled: boolean; label: string; price: string; blurb: string; stripeLookupKey: string;
+  membersOnly?: boolean; // only Deep Dive members can buy it
   founding?: { price: string; limit: number; stripeLookupKey: string }; // early-buyer price for the first `limit` sales
   bonusTimelineDays?: number; // free timeline included with the purchase
 }> = {
   synastry: {
-    enabled: true, label: "The Two of You", price: "$29",
+    enabled: true, label: "The Two of You", price: "$19",
     blurb: "Your compatibility report, with both charts included. Where you two click, where you'll clash, and how to move through it, plus how your timelines line up over the next year. Includes a free month of your personal timeline.",
     stripeLookupKey: "compat_regular",
-    founding: { price: "$19", limit: 50, stripeLookupKey: "compat_founding" },
     bonusTimelineDays: 30,
   },
   question: { enabled: false, label: "Single question", price: "$9", blurb: "Pick one question from the menu and get your answer in minutes.", stripeLookupKey: "one_question" },
+  extra: { enabled: true, membersOnly: true, label: "Extra compatibility reading", price: "$3.99", blurb: "One more compatibility reading this month, beyond the 5 in your plan.", stripeLookupKey: "compat_extra" },
   yearahead: { enabled: true, label: "Year-ahead timeline", price: "$19", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripeLookupKey: "yearahead" },
 };
 

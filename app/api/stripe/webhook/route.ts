@@ -53,6 +53,7 @@ async function fulfilOneTime(s: Stripe.Checkout.Session) {
   const row =
     m.product === "question" ? { ...base, kind: "question", category: m.category, question: m.question, title: m.question }
     : m.product === "synastry" ? { ...base, kind: "synastry", person_id: m.person_id, title: "The Two of You" }
+    : m.product === "extra" ? { ...base, kind: "synastry", person_id: m.person_id, title: "You & " + ((await db.from("people").select("name").eq("id", m.person_id).maybeSingle()).data?.name ?? "them") }
     : m.product === "yearahead" ? { ...base, kind: "yearahead", title: "Your year ahead" }
     : null;
   if (!row) return;
