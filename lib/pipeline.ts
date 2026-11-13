@@ -1,6 +1,8 @@
 // Writes readings ahead of time and releases them on their surprise delivery moment.
 import { supabaseAdmin } from "./supabase";
-import { natalReading, monthlyTimeline, questionAnswer, synastryReading, yearAheadTimeline } from "./readings";
+import { natalReading, monthlyTimeline, questionAnswer, yearAheadTimeline } from "./readings";
+import { fullChartReading } from "./fullchart";
+import { synastryDocReading } from "./synastry-doc";
 import { BirthData } from "./engine/natal";
 import { notifyReadingArrived, inviteToSubscribe } from "./notify";
 import { firstTimelineTime, nextMonthlyTimelineTime } from "./schedule";
@@ -43,10 +45,11 @@ export async function generateReading(id: string) {
     else if (row.kind === "timeline") out = await monthlyTimeline(me, asOf);
     else if (row.kind === "question") out = await questionAnswer(me, row.category, row.question, asOf);
     else if (row.kind === "yearahead") out = await yearAheadTimeline(me, asOf);
+    else if (row.kind === "fullchart") out = await fullChartReading(me, asOf);
     else {
       const { data: person } = await db.from("people").select("*").eq("id", row.person_id).single();
       if (!person) throw new Error("Saved person was removed");
-      out = await synastryReading(me, birthFromRow(person), person.relationship, asOf);
+      out = await synastryDocReading(me, birthFromRow(person), person.relationship, asOf);
     }
     await db.from("readings").update({ status: "ready", title: out.title, body: out.body, error: null }).eq("id", id);
   } catch (e: any) {

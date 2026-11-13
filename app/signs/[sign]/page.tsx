@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SIGN_INFO, signBySlug } from "@/lib/signs";
 import SignEmblem from "@/components/SignEmblem";
+import { SIGN_ART } from "@/lib/sign-art";
 
 type Tab = "sun" | "moon" | "rising";
 const TABS: { key: Tab; label: string }[] = [{ key: "sun", label: "Sun" }, { key: "moon", label: "Moon" }, { key: "rising", label: "Rising" }];
@@ -25,9 +26,18 @@ export default async function SignPage({ params, searchParams }: { params: Promi
   return (
     <section className="narrow" style={{ paddingBottom: 40, ["--accent" as string]: s.accent }}>
       <div className="sign-hero">
-        <SignEmblem glyph={s.glyph} accent={s.accent} label={`${s.name} emblem`} />
-        <h1>{s.name}</h1>
-        <div className="rule"><span className="hint">{s.dates}</span></div>
+        {SIGN_ART[s.name] ? (
+          <>
+            <img className="sign-art" src={SIGN_ART[s.name]} alt={`${s.name} artwork`} width={400} height={600} />
+            <h1 className="sr-only">{s.name}</h1>
+          </>
+        ) : (
+          <>
+            <SignEmblem glyph={s.glyph} accent={s.accent} label={`${s.name} emblem`} />
+            <h1>{s.name}</h1>
+            <div className="rule"><span className="hint">{s.dates}</span></div>
+          </>
+        )}
       </div>
       <nav className="tabs" aria-label={`${s.name} placements`}>
         {TABS.map(x => (

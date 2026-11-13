@@ -17,6 +17,7 @@ export const TIERS: Record<Tier, {
   label: string; price: string; blurb: string; perks: string[];
   monthlyTimeline: boolean; questionsPerMonth: number; savedPeople: number;
   compatPerMonth: number;         // synastry readings included each month (with saved people)
+  fullChart: boolean;             // the Full Chart reading (natal, progressions, Human Design, 2-year timeline)
   stripeLookupKey?: string;       // Stripe price lookup key, monthly
   yearlyPrice?: string;           // shown on the site
   stripeYearlyLookupKey?: string; // Stripe price lookup key, yearly
@@ -24,19 +25,19 @@ export const TIERS: Record<Tier, {
   free: {
     label: "Free", price: "$0", blurb: "Your full natal chart deep dive.",
     perks: ["Big three, chart ruler and angles", "Every planet: house, speed, declination", "Aspects, patterns, chart shape", "Nodes, Lilith, Part of Fortune and harmonics"],
-    monthlyTimeline: false, questionsPerMonth: 0, savedPeople: 0, compatPerMonth: 0,
+    monthlyTimeline: false, questionsPerMonth: 0, savedPeople: 0, compatPerMonth: 0, fullChart: false,
   },
   timeline: {
     label: "Timeline", price: "$9 / month", blurb: "Your personal timeline, every month.",
-    perks: ["Everything in Free", "A monthly timeline with exact transit peak dates", "Themes and power windows for the month", "A manifestation ritual tied to your next key date"],
-    monthlyTimeline: true, questionsPerMonth: 0, savedPeople: 0, compatPerMonth: 0,
+    perks: ["Everything in Free", "Your Full Chart: progressions, fixed stars, Human Design and a 2-year timeline", "A monthly timeline with exact transit peak dates", "Themes and power windows for the month", "A manifestation ritual tied to your next key date"],
+    monthlyTimeline: true, questionsPerMonth: 0, savedPeople: 0, compatPerMonth: 0, fullChart: true,
     stripeLookupKey: "timeline_monthly",
     yearlyPrice: "$90 / year (2 months free)", stripeYearlyLookupKey: "timeline_yearly",
   },
   deep: {
     label: "Deep Dive", price: "$19 / month", blurb: "Monthly updates of your timeline, 2 personalized insights a month, and synastry with anyone you add.",
     perks: ["Everything in Timeline", "Monthly updates of your timeline", "2 deeper, personalized insights a month", "5 synastry readings a month with anyone you add to Your People", "Extra synastry readings $3.99 each"],
-    monthlyTimeline: true, questionsPerMonth: 2, savedPeople: 30, compatPerMonth: 5,
+    monthlyTimeline: true, questionsPerMonth: 2, savedPeople: 30, compatPerMonth: 5, fullChart: true,
     stripeLookupKey: "deep_monthly",
     yearlyPrice: "$190 / year (2 months free)", stripeYearlyLookupKey: "deep_yearly",
   },

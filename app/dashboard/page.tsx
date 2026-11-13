@@ -9,6 +9,7 @@ import BuyCompatibility from "@/components/BuyCompatibility";
 import { planUsedThisMonth } from "@/lib/quota";
 import { currentOffer } from "@/lib/stripe";
 import AutoRefresh from "@/components/AutoRefresh";
+import StartFullChart from "@/components/StartFullChart";
 import { currentUser, supabaseAdmin } from "@/lib/supabase";
 import { natalChart } from "@/lib/engine/natal";
 import { birthFromRow } from "@/lib/pipeline";
@@ -41,7 +42,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const chart = natalChart(birthFromRow(profile));
   const wantPlan = plan === "timeline" || plan === "deep" ? plan : null;
   const fmt = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: profile.timezone });
-  const kindLabel: Record<string, string> = { natal: "your free chart", timeline: "your monthly timeline", question: "an answer to your question", synastry: "a compatibility reading", yearahead: "your year-ahead timeline" };
+  const kindLabel: Record<string, string> = { natal: "your free chart", timeline: "your monthly timeline", question: "an answer to your question", synastry: "a synastry reading", yearahead: "your year-ahead timeline", fullchart: "your Full Chart" };
+  const hasFullChart = (readings ?? []).some(r => r.kind === "fullchart" && r.status !== "failed");
 
   return (
     <div className="wrap dash">
@@ -111,6 +113,13 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           ))}
         </ul>
 
+        {tier.fullChart && !hasFullChart && (
+          <section className="panel" style={{ marginTop: 32 }}>
+            <h3>Your Full Chart</h3>
+            <p className="hint">Your whole chart, planet by planet, with fixed stars, progressions, Human Design and a two-year timeline of exact dates. It's included in your membership.</p>
+            <StartFullChart />
+          </section>
+        )}
         {ONE_TIME.yearahead.enabled && (
           <section className="panel" style={{ marginTop: 32 }}>
             <h3>{ONE_TIME.yearahead.label}</h3>
