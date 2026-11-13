@@ -73,10 +73,10 @@ export function uncertainPlacements(b: BirthData): { planet: string; signs: stri
 }
 
 /** One dated moment from the next six months for Work or Personal Growth */
-export function timelineSample(c: NatalChart, topic: "work" | "growth", from = new Date()) {
-  const focus = topic === "work" ? CATEGORY_FOCUS.career : CATEGORY_FOCUS.growth;
+export function timelineSample(c: NatalChart, topic: "love" | "work" | "growth", from = new Date()) {
+  const focus = topic === "work" ? CATEGORY_FOCUS.career : topic === "love" ? CATEGORY_FOCUS.love : CATEGORY_FOCUS.growth;
   const end = new Date(from.getTime() + 183 * 86400000);
-  const events = transitTimeline(c, from, end, { bodies: ["Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"] })
+  const events = transitTimeline(c, from, end, { bodies: topic === "love" ? ["Venus", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"] : ["Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto"] })
     .filter(e => focus.points.includes(e.natal) || (e.natalHouse != null && focus.houses.includes(e.natalHouse)));
   const dated = events.flatMap(e => e.passes.flatMap(p => p.exact.map(x => ({ e, date: x.date, retro: x.retrograde }))))
     .sort((a, b) => b.e.weight - a.e.weight || a.date.localeCompare(b.date));

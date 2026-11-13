@@ -5,6 +5,7 @@ import { DominantText, TopicInsight, ChartActions } from "@/components/FreeResul
 import { freeChart } from "@/lib/freechart-server";
 import { signOf } from "@/lib/engine/core";
 import { chartSignature, PLANET_TAKEAWAY } from "@/lib/engine/dominant";
+import { HOUSE_THEMES } from "@/lib/engine/transits";
 import { signByName } from "@/lib/signs";
 import NewsletterSignup from "@/components/NewsletterSignup";
 
@@ -83,6 +84,22 @@ export default async function Result({ searchParams }: { searchParams: Promise<{
           </li>
         ))}
       </ul>
+
+      {c.houseCusps && (<>
+        <h2 className="sec">Your 12 houses</h2>
+        <p className="hint" style={{ marginTop: -6 }}>Each house is an area of life. The sign on it colors how you approach that area.</p>
+        <ul className="placements houses">
+          {c.houseCusps.map(h => {
+            const inside = c.planets.filter(p => p.house === h.house).map(p => p.name);
+            return (
+              <li key={h.house}>
+                <span><strong>{ord(h.house)} house</strong><span className="theme">{HOUSE_THEMES[h.house][0].toUpperCase() + HOUSE_THEMES[h.house].slice(1)}{inside.length ? `. Holds your ${inside.join(", ")}` : ""}</span></span>
+                <span>{signOf(h.lon)}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </>)}
 
       <details className="full">
         <summary>See the full chart details</summary>

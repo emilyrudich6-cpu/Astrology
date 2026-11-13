@@ -59,18 +59,21 @@ export function TopicInsight({ b }: { b: string }) {
       {busy && <p className="hint loading">Reading your chart…</p>}
       {text && <div className="prose">{paras(text)}</div>}
       {err && <p className="hint">{err}</p>}
-      {topic === "love" && !busy && (
+      {topic && !busy && sample && (
+        <div className="follow">
+          <p className="hint" style={{ marginBottom: 4 }}>{topic === "love" ? "A date to watch in love" : "A date from your timeline"}</p>
+          <div className="date-pill"><b>{niceDate(sample.date)}</b><span>{sample.transit}</span></div>
+        </div>
+      )}
+      {topic === "love" && !busy && (text || err) && (
         <div className="follow">
           <p className="kicker-italic small rose">Is there someone you had in mind? ♡</p>
+          <p className="hint">The Two of You puts your chart next to theirs: attraction, communication, friction, and when your timelines line up.</p>
           <Link className="btn small" href="/#plans">Compare our charts</Link>
         </div>
       )}
-      {topic && topic !== "love" && !busy && sample && (
-        <div className="follow">
-          <p className="hint" style={{ marginBottom: 4 }}>A date from your timeline</p>
-          <div className="date-pill"><b>{niceDate(sample.date)}</b><span>{sample.transit}</span></div>
-          <p className="hint">Your full timeline shows every date like this, each month. <Link href="/#plans">See plans</Link></p>
-        </div>
+      {topic && topic !== "love" && !busy && (
+        <p className="hint">Your full timeline shows every date like this, each month. <Link href="/#plans">See plans</Link></p>
       )}
     </div>
   );
