@@ -396,3 +396,14 @@ h3.group { font-family: var(--display); font-style: italic; font-weight: 400; co
   .writing-orbit .ring, .writing-orbit img, .writing-glyph, .writing-line { animation: none; }
   .writing-bar span { transition: none; }
 }
+
+/* Account page */
+.auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: 22px 0 18px; border: 1px solid var(--line); border-radius: 12px; background: var(--ink-2); }
+.auth-tabs button { font: inherit; padding: 10px; border: 0; border-radius: 9px; background: transparent; color: var(--silver); cursor: pointer; }
+.auth-tabs button[aria-selected="true"] { background: var(--orchid); color: var(--orchid-ink); font-weight: 600; }
+.auth-tabs button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.pw { position: relative; }
+.pw input { width: 100%; padding-right: 64px; }
+.pw .linklike { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); }
+.auth-done h2 { font-size: var(--step-2); margin-top: 24px; }
+.linklike { background: none; border: 0; padding: 0; font: inherit; color: var(--orchid); text-decoration: underline; cursor: pointer; }
