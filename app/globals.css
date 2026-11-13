@@ -371,3 +371,28 @@ h3.group { font-family: var(--display); font-style: italic; font-weight: 400; co
 .sign-card:hover { transform: translateY(-3px); }
 .sign-card:focus-visible { outline: 2px solid var(--orchid); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .sign-card { transition: none; } .sign-card:hover { transform: none; } }
+
+/* Writing loader */
+.writing { text-align: center; padding: 30px 20px 26px; margin: 8px 0 22px; border: 1px solid var(--line); border-radius: 22px;
+  background: radial-gradient(80% 70% at 50% 30%, #3a1b44 0%, var(--ink-2) 60%, var(--ink) 100%); overflow: hidden; }
+.writing h3 { font-family: var(--display); font-style: italic; font-size: var(--step-2); margin: 18px 0 4px; color: var(--paper); }
+.writing-orbit { position: relative; width: 260px; height: 260px; margin: 0 auto; display: grid; place-items: center; }
+.writing-orbit img { width: 120px; height: auto; border-radius: 10px; position: relative; z-index: 1; animation: writing-breathe 4s ease-in-out infinite; }
+.writing-glyph { font-size: 3rem; color: var(--gold); animation: writing-breathe 4s ease-in-out infinite; }
+.writing-orbit .ring { position: absolute; inset: 0; margin: auto; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--gold) 28%, transparent); animation: writing-spin linear infinite; }
+.writing-orbit .ring i { position: absolute; top: -4px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 12px 3px color-mix(in srgb, var(--gold) 60%, transparent); }
+.writing-orbit .r1 { width: 170px; height: 170px; animation-duration: 9s; }
+.writing-orbit .r2 { width: 215px; height: 215px; animation-duration: 15s; animation-direction: reverse; }
+.writing-orbit .r2 i { background: var(--rose); box-shadow: 0 0 12px 3px color-mix(in srgb, var(--rose) 60%, transparent); width: 6px; height: 6px; margin-left: -3px; top: -3px; }
+.writing-orbit .r3 { width: 258px; height: 258px; animation-duration: 24s; border-style: dashed; opacity: .6; }
+.writing-orbit .r3 i { background: var(--orchid); box-shadow: 0 0 10px 2px color-mix(in srgb, var(--orchid) 60%, transparent); width: 5px; height: 5px; margin-left: -2.5px; top: -2.5px; }
+.writing-line { min-height: 1.6em; color: var(--silver); margin: 0 0 16px; animation: writing-fade 6s ease-in-out; }
+.writing-bar { height: 2px; max-width: 280px; margin: 0 auto 14px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.writing-bar span { display: block; height: 100%; background: linear-gradient(90deg, var(--orchid), var(--gold)); transition: width 1s linear; }
+@keyframes writing-spin { to { transform: rotate(360deg); } }
+@keyframes writing-breathe { 0%, 100% { filter: drop-shadow(0 0 10px rgba(217, 187, 133, .25)); transform: scale(1); } 50% { filter: drop-shadow(0 0 26px rgba(217, 187, 133, .55)); transform: scale(1.03); } }
+@keyframes writing-fade { 0% { opacity: 0; transform: translateY(4px); } 12%, 88% { opacity: 1; transform: none; } 100% { opacity: .2; } }
+@media (prefers-reduced-motion: reduce) {
+  .writing-orbit .ring, .writing-orbit img, .writing-glyph, .writing-line { animation: none; }
+  .writing-bar span { transition: none; }
+}

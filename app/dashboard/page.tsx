@@ -10,6 +10,8 @@ import { planUsedThisMonth } from "@/lib/quota";
 import { currentOffer } from "@/lib/stripe";
 import AutoRefresh from "@/components/AutoRefresh";
 import StartFullChart from "@/components/StartFullChart";
+import WritingLoader from "@/components/WritingLoader";
+import { SIGN_ART } from "@/lib/sign-art";
 import { currentUser, supabaseAdmin, isAdmin } from "@/lib/supabase";
 import { natalChart } from "@/lib/engine/natal";
 import { birthFromRow } from "@/lib/pipeline";
@@ -31,7 +33,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const delivered = (readings ?? []).filter(r => r.delivered_at).sort((a, b) => b.delivered_at!.localeCompare(a.delivered_at!));
   const onTheWay = (readings ?? []).filter(r => !r.delivered_at && r.status !== "failed");
   const natalPending = onTheWay.some(r => r.kind === "natal");
-  const writingNow = onTheWay.some(r => new Date(r.deliver_at) <= new Date()); // free chart or a paid one-off being written
+  const writing = onTheWay.find(r => new Date(r.deliver_at) <= new Date()); // free chart or a paid one-off being written
+  const writingNow = !!writing;
   const compat = await currentOffer("synastry");
   const bonusUntil = profile.tier === "free" && profile.bonus_timeline_until && new Date(profile.bonus_timeline_until) > new Date()
     ? new Date(profile.bonus_timeline_until) : null;
@@ -83,7 +86,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       <div>
         {upgraded && <div className="notice">You're in. Your first timeline arrives within the next three days, on a surprise day.</div>}
-        {bought && <div className="notice">Payment received. Your {ONE_TIME[bought as keyof typeof ONE_TIME]?.label.toLowerCase() ?? "reading"} is being written and will be here in about two minutes.</div>}
+        {bought && <div className="notice">Payment received. Your {ONE_TIME[bought as keyof typeof ONE_TIME]?.label.toLowerCase() ?? "reading"} is being written now.</div>}
         {wantPlan && profile.tier === "free" && (
           <div className="panel">
             <h3>Finish choosing {TIERS[wantPlan].label}</h3>
@@ -98,10 +101,11 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         <h2>Your readings</h2>
         {writingNow && <AutoRefresh seconds={20} />}
         {bonusUntil && <div className="notice">Your free month of timeline readings runs until {fmt(bonusUntil.toISOString())}. Want it every month? <a href="/dashboard?plan=timeline">Keep my timeline, {TIERS.timeline.price}</a></div>}
+        {writing && <WritingLoader kind={writing.kind} startedAt={writing.created_at} sign={chart.planets[0].sign} art={SIGN_ART[chart.planets[0].sign]} />}
         {onTheWay.length > 0 && (
           <p className="onway">
             On the way: {onTheWay.map(r => kindLabel[r.kind]).join(", ")}.{" "}
-            {writingNow ? "Being written now, which takes about two minutes. This page refreshes on its own." : "Each arrives on a surprise day."}
+            {writingNow ? "This page refreshes on its own." : "Each arrives on a surprise day."}
           </p>
         )}
         {delivered.length === 0 && !natalPending && <p className="onway">Nothing here yet.</p>}
