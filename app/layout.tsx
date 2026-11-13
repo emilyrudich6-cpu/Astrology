@@ -36,7 +36,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <Link href="/dashboard">My readings</Link>
               </>
             ) : (
-              <Link href="/login">Sign in</Link>
+              <Link href="/login">Sign in / Sign up</Link>
             )}
           </nav>
         </header>
