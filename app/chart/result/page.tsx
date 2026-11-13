@@ -170,8 +170,8 @@ export default async function Result({ searchParams }: { searchParams: Promise<{
             <circle cx="98" cy="80" r="46" fill="none" stroke="var(--silver)" />
           </svg>
           <h3>Now meet their chart ♡</h3>
-          <p>The Two of You puts both charts side by side: attraction, communication, friction and the patterns you keep repeating.</p>
-          <Link className="btn ghost small" href="/two-of-you">See an example</Link>
+          <p>A synastry reading puts both charts side by side: attraction, communication, friction and the patterns you keep repeating.</p>
+          <Link className="btn ghost small" href="/synastry">See an example</Link>
         </div>
       </section>
     </div>

@@ -68,8 +68,8 @@ export function TopicInsight({ b }: { b: string }) {
       {topic === "love" && !busy && (text || err) && (
         <div className="follow">
           <p className="kicker-italic small rose">Is there someone you had in mind? ♡</p>
-          <p className="hint">The Two of You puts your chart next to theirs: attraction, communication, friction, and when your timelines line up.</p>
-          <Link className="btn small" href="/two-of-you">Compare our charts</Link>
+          <p className="hint">A synastry reading puts your chart next to theirs: attraction, communication, friction, and when your timelines line up.</p>
+          <Link className="btn small" href="/synastry">Compare our charts</Link>
         </div>
       )}
       {topic && topic !== "love" && !busy && (

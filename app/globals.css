@@ -266,7 +266,7 @@ h3.group { font-family: var(--display); font-style: italic; font-weight: 400; co
 .placements.houses li { align-items: flex-start; }
 .placements.houses strong { font-weight: 500; display: block; }
 .placements.houses .theme { display: block; font-size: .8rem; color: var(--muted); margin-top: 2px; }
-/* The Two of You: midnight blue and brass */
+/* Synastry Reading page: midnight blue and brass */
 .duo { --midnight: #0e1630; --midnight-2: #16213f; --brass: #c2a06a; background: radial-gradient(ellipse at 50% 0%, #1b2a55 0%, var(--midnight) 60%); margin-top: -8px; padding-bottom: 40px; }
 .duo-hero { padding-top: 30px; text-align: center; }
 .duo-kicker { font-family: var(--display); font-style: italic; color: var(--brass); font-size: 1.15rem; margin: 0; }

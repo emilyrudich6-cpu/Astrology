@@ -6,7 +6,7 @@ export const revalidate = 3600;
 
 const PLAN_DETAIL: Record<Exclude<Tier, "free">, string> = {
   timeline: "Every month, on a surprise day, your timeline arrives with the exact dates your biggest transits peak.",
-  deep: "Your monthly timeline, 2 questions a month, and compatibility readings with anyone you add to Your People.",
+  deep: "Monthly updates of your timeline, 2 deeper, personalized insights a month, and synastry readings with anyone you add to Your People.",
 };
 const ONE_TIME_ORDER: OneTimeKey[] = ["synastry", "question", "yearahead"];
 
@@ -50,8 +50,8 @@ export default async function Home() {
         <div className="card meet">
           <Orbits />
           <h2>Now meet their chart ♡</h2>
-          <p>The Two of You puts both charts side by side: attraction, communication, friction and the patterns you keep repeating.</p>
-          <Link className="btn ghost small" href="/two-of-you">See an example</Link>
+          <p>A synastry reading puts both charts side by side: attraction, communication, friction and the patterns you keep repeating.</p>
+          <Link className="btn ghost small" href="/synastry">See an example</Link>
         </div>
       </section>
 
@@ -68,8 +68,8 @@ export default async function Home() {
                     <span className="row-price">{ONE_TIME[k].price}</span></summary>
                   <div className="row-body">
                     <p>{ONE_TIME[k].blurb}</p>
-                    {isCompat && <p className="hint"><Link href="/two-of-you">Read a full example</Link></p>}
-                    <Link className="btn small" href={`/login?next=${encodeURIComponent("/dashboard")}`}>{isCompat ? "Get The Two of You" : "Buy once"}</Link>
+                    {isCompat && <p className="hint"><Link href="/synastry">Read a full example</Link></p>}
+                    <Link className="btn small" href={`/login?next=${encodeURIComponent("/dashboard")}`}>{isCompat ? "Get my synastry reading" : "Buy once"}</Link>
                   </div>
                 </details>
               </li>
@@ -83,7 +83,7 @@ export default async function Home() {
             return (
               <li key={t}>
                 <details>
-                  <summary><span>{tier.label}<span className="row-sub">{t === "deep" ? `Timeline, ${tier.compatPerMonth} compatibility readings and ${tier.questionsPerMonth} questions a month` : "Your personal timeline every month"}</span></span><span className="row-price">{tier.price}</span></summary>
+                  <summary><span>{tier.label}<span className="row-sub">{t === "deep" ? `Timeline updates, ${tier.questionsPerMonth} personalized insights and ${tier.compatPerMonth} synastry readings a month` : "Your personal timeline every month"}</span></span><span className="row-price">{tier.price}</span></summary>
                   <div className="row-body">
                     <p>{PLAN_DETAIL[t]}</p>
                     {tier.yearlyPrice && <p className="hint">or {tier.yearlyPrice}</p>}

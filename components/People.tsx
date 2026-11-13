@@ -38,7 +38,7 @@ export default function People({ people, max, remaining, perMonth, extraPrice }:
 
   return (
     <div>
-      <p className="hint">{remaining > 0 ? `${remaining} of ${perMonth} compatibility readings left this month.` : `You've used this month's ${perMonth} readings. More are ${extraPrice} each, or wait until next month.`}</p>
+      <p className="hint">{remaining > 0 ? `${remaining} of ${perMonth} synastry readings left this month.` : `You've used this month's ${perMonth} readings. More are ${extraPrice} each, or wait until next month.`}</p>
       {people.length > 0 && (
         <ul className="people">
           {people.map(p => (

@@ -57,7 +57,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <h3>Your plan: {tier.label}</h3>
           {profile.tier === "free" ? (
             <>
-              <p className="hint">Upgrade for a monthly timeline, or Deep Dive for questions and compatibility with anyone you add.</p>
+              <p className="hint">Upgrade for monthly timeline updates, or Deep Dive for personalized insights and synastry with anyone you add.</p>
               <div style={{ display: "grid", gap: 10 }}>
                 <CheckoutButton tier="timeline" label={`Timeline, ${TIERS.timeline.price}`} />
                 <CheckoutButton tier="timeline" interval="year" ghost label={`Timeline, ${TIERS.timeline.yearlyPrice}`} />
@@ -111,25 +111,22 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           ))}
         </ul>
 
-        <section className="panel" style={{ marginTop: 32 }}>
-          <h3>Ask a question</h3>
-          {tier.questionsPerMonth > 0 || ONE_TIME.question.enabled ? (
-            <AskQuestion menu={QUESTION_MENU} remaining={Math.max(0, tier.questionsPerMonth - askedThisMonth)} perMonth={tier.questionsPerMonth}
-              buyPrice={ONE_TIME.question.enabled ? ONE_TIME.question.price : undefined} />
-          ) : (
-            <p className="hint">Deep Dive members pick {TIERS.deep.questionsPerMonth} questions a month from the menu and get answers on surprise days.</p>
-          )}
-        </section>
-
+        {ONE_TIME.yearahead.enabled && (
+          <section className="panel" style={{ marginTop: 32 }}>
+            <h3>{ONE_TIME.yearahead.label}</h3>
+            <p className="hint">{ONE_TIME.yearahead.blurb}</p>
+            <BuyButton product="yearahead" label={`Get my year ahead, ${ONE_TIME.yearahead.price}`} />
+          </section>
+        )}
         <section className="panel">
-          <h3>{tier.compatPerMonth > 0 ? "Your People" : ONE_TIME.synastry.label}</h3>
+          <h3>{tier.compatPerMonth > 0 ? "Your People: synastry readings" : ONE_TIME.synastry.label}</h3>
           {tier.compatPerMonth > 0 ? (
             <People people={people ?? []} max={tier.savedPeople} perMonth={tier.compatPerMonth}
               remaining={Math.max(0, tier.compatPerMonth - compatThisMonth)} extraPrice={ONE_TIME.extra.price} />
           ) : compat ? (
             <>
               <p className="hint">{ONE_TIME.synastry.blurb}</p>
-              <p className="hint">Or get {TIERS.deep.compatPerMonth} compatibility readings every month with <Link href="/dashboard?plan=deep">Deep Dive, {TIERS.deep.price}</Link>.</p>
+              <p className="hint">Or get {TIERS.deep.compatPerMonth} synastry readings every month with <Link href="/dashboard?plan=deep">Deep Dive, {TIERS.deep.price}</Link>.</p>
               <BuyCompatibility price={compat.price} />
             </>
           ) : (
@@ -137,13 +134,16 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           )}
         </section>
 
-        {ONE_TIME.yearahead.enabled && (
-          <section className="panel">
-            <h3>{ONE_TIME.yearahead.label}</h3>
-            <p className="hint">{ONE_TIME.yearahead.blurb}</p>
-            <BuyButton product="yearahead" label={`Get my year ahead, ${ONE_TIME.yearahead.price}`} />
-          </section>
-        )}
+        <section className="panel">
+          <h3>Monthly timeline and personalized insights</h3>
+          {tier.questionsPerMonth > 0 || ONE_TIME.question.enabled ? (
+            <AskQuestion menu={QUESTION_MENU} remaining={Math.max(0, tier.questionsPerMonth - askedThisMonth)} perMonth={tier.questionsPerMonth}
+              buyPrice={ONE_TIME.question.enabled ? ONE_TIME.question.price : undefined} />
+          ) : (
+            <p className="hint">Deep Dive members get monthly updates of their timeline plus {TIERS.deep.questionsPerMonth} deeper, personalized insights a month, chosen from a guided menu and delivered on surprise days. <Link href="/dashboard?plan=deep">Deep Dive, {TIERS.deep.price}</Link></p>
+          )}
+        </section>
+
       </div>
     </div>
   );

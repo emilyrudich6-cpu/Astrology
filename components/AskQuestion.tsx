@@ -13,7 +13,7 @@ export default function AskQuestion({ menu, remaining, perMonth, buyPrice }: { m
   const current = menu.find(m => m.key === cat);
 
   const buying = remaining <= 0;
-  if (buying && !buyPrice) return <p className="hint">You've asked all {perMonth} of this month's questions. New ones open on the 1st.</p>;
+  if (buying && !buyPrice) return <p className="hint">You've used this month's {perMonth} insights. New ones open on the 1st.</p>;
 
   async function buy() {
     setBusy(true); setMsg("");
@@ -37,7 +37,7 @@ export default function AskQuestion({ menu, remaining, perMonth, buyPrice }: { m
     <div>
       <p className="hint">{buying
         ? (perMonth > 0 ? `You've used this month's ${perMonth} questions. Buy one more for ${buyPrice}: pick an area, then the question.` : `Ask one question for ${buyPrice} and get your answer in minutes. Pick an area, then the question.`)
-        : `${remaining} of ${perMonth} left this month. Pick an area, then the question.`}</p>
+        : `${remaining} of ${perMonth} personalized insights left this month. Pick an area, then what you want to know.`}</p>
       <div className="cats" role="group" aria-label="Question area">
         {menu.map(m => (
           <button key={m.key} className="chip" aria-pressed={cat === m.key} onClick={() => { setCat(m.key); setQ(null); setMsg(""); }}>
@@ -50,7 +50,7 @@ export default function AskQuestion({ menu, remaining, perMonth, buyPrice }: { m
           {current.questions.map(x => <button key={x} className="qopt" aria-pressed={q === x} onClick={() => setQ(x)}>{x}</button>)}
         </div>
       )}
-      {q && !buying && <button className="btn" disabled={busy} onClick={ask}>{busy ? "Sending…" : "Ask this question"}</button>}
+      {q && !buying && <button className="btn" disabled={busy} onClick={ask}>{busy ? "Sending…" : "Get this insight"}</button>}
       {q && buying && <button className="btn" disabled={busy} onClick={buy}>{busy ? "Opening checkout…" : `Buy this answer, ${buyPrice}`}</button>}
       {msg && <p className="hint" role="status" style={{ marginTop: 12 }}>{msg}</p>}
     </div>

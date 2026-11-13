@@ -16,7 +16,7 @@ export type Interval = "month" | "year";
 export const TIERS: Record<Tier, {
   label: string; price: string; blurb: string; perks: string[];
   monthlyTimeline: boolean; questionsPerMonth: number; savedPeople: number;
-  compatPerMonth: number;         // compatibility readings included each month (with saved people)
+  compatPerMonth: number;         // synastry readings included each month (with saved people)
   stripeLookupKey?: string;       // Stripe price lookup key, monthly
   yearlyPrice?: string;           // shown on the site
   stripeYearlyLookupKey?: string; // Stripe price lookup key, yearly
@@ -34,8 +34,8 @@ export const TIERS: Record<Tier, {
     yearlyPrice: "$90 / year (2 months free)", stripeYearlyLookupKey: "timeline_yearly",
   },
   deep: {
-    label: "Deep Dive", price: "$19 / month", blurb: "Your timeline, your questions, and compatibility with anyone you add.",
-    perks: ["Everything in Timeline", "5 compatibility readings a month with anyone you add to Your People", "2 questions a month about your timeline, answered on a surprise day", "Extra compatibility readings $3.99 each"],
+    label: "Deep Dive", price: "$19 / month", blurb: "Monthly updates of your timeline, 2 personalized insights a month, and synastry with anyone you add.",
+    perks: ["Everything in Timeline", "Monthly updates of your timeline", "2 deeper, personalized insights a month", "5 synastry readings a month with anyone you add to Your People", "Extra synastry readings $3.99 each"],
     monthlyTimeline: true, questionsPerMonth: 2, savedPeople: 30, compatPerMonth: 5,
     stripeLookupKey: "deep_monthly",
     yearlyPrice: "$190 / year (2 months free)", stripeYearlyLookupKey: "deep_yearly",
@@ -52,13 +52,13 @@ export const ONE_TIME: Record<OneTimeKey, {
   bonusTimelineDays?: number; // free timeline included with the purchase
 }> = {
   synastry: {
-    enabled: true, label: "The Two of You", price: "$19",
-    blurb: "Your compatibility report, with both charts included. Where you two click, where you'll clash, and how to move through it, plus how your timelines line up over the next year. Includes a free month of your personal timeline.",
+    enabled: true, label: "Synastry Reading", price: "$19",
+    blurb: "Your chart next to theirs, both included. Where you two click, where you'll clash, and how to move through it, plus how your timelines line up over the next year. Includes a free month of your personal timeline.",
     stripeLookupKey: "compat_regular",
     bonusTimelineDays: 30,
   },
   question: { enabled: false, label: "Single question", price: "$9", blurb: "Pick one question from the menu and get your answer in minutes.", stripeLookupKey: "one_question" },
-  extra: { enabled: true, membersOnly: true, label: "Extra compatibility reading", price: "$3.99", blurb: "One more compatibility reading this month, beyond the 5 in your plan.", stripeLookupKey: "compat_extra" },
+  extra: { enabled: true, membersOnly: true, label: "Extra synastry reading", price: "$3.99", blurb: "One more synastry reading this month, beyond the 5 in your plan.", stripeLookupKey: "compat_extra" },
   yearahead: { enabled: true, label: "Year-ahead timeline", price: "$19", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripeLookupKey: "yearahead" },
 };
 

@@ -31,12 +31,13 @@ export default function LoginForm({ next }: { next: string }) {
       <div className="field"><label htmlFor="email">Email</label>
         <input id="email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} /></div>
       {err && <p className="error">{err}</p>}
-      <button className="btn" disabled={busy}>{busy ? "Sending…" : "Email me a code"}</button>
+      <button className="btn" disabled={busy}>{busy ? "Sending…" : "Email me a sign-in link"}</button>
     </form>
   );
   return (
     <form onSubmit={verify}>
-      <p>We sent a code to <strong>{email}</strong>. You can also tap the link in that email.</p>
+      <p>We emailed a sign-in link to <strong>{email}</strong>. Open it on this same phone or computer, in this same browser, and you'll be signed in.</p>
+      <p className="hint">If your email shows a 6-digit code instead, type it here.</p>
       <div className="field"><label htmlFor="code">6-digit code</label>
         <input id="code" inputMode="numeric" autoComplete="one-time-code" required value={code} onChange={e => setCode(e.target.value)} /></div>
       {err && <p className="error">{err}</p>}

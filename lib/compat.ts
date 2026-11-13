@@ -12,7 +12,7 @@ export async function startIncludedReading(userId: string, personId: string): Pr
   const db = supabaseAdmin();
   const { data: p } = await db.from("profiles").select("tier,timezone").eq("id", userId).single();
   const perMonth = p ? TIERS[p.tier as Tier].compatPerMonth : 0;
-  if (!perMonth) return { ok: false, error: "Compatibility readings with Your People are part of Deep Dive.", status: 403 };
+  if (!perMonth) return { ok: false, error: "Synastry readings with Your People are part of Deep Dive.", status: 403 };
   const { data: person } = await db.from("people").select("id,name").eq("id", personId).eq("user_id", userId).maybeSingle();
   if (!person) return { ok: false, error: "We couldn't find that person.", status: 404 };
   const used = await planUsedThisMonth(userId, p!.timezone, "synastry");

@@ -3,6 +3,14 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Keeps the member's login session fresh on every page load.
 export async function middleware(request: NextRequest) {
+  // A sign-in link that landed on the wrong page (e.g. the homepage) still finishes signing in
+  const { pathname, searchParams } = request.nextUrl;
+  if (pathname !== "/auth/callback" && (searchParams.get("code") || searchParams.get("token_hash"))) {
+    const to = request.nextUrl.clone();
+    to.pathname = "/auth/callback";
+    if (!to.searchParams.get("next")) to.searchParams.set("next", "/dashboard");
+    return NextResponse.redirect(to);
+  }
   let response = NextResponse.next({ request });
   // Not configured yet: let pages load instead of failing
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return response;
