@@ -366,3 +366,8 @@ h3.group { font-family: var(--display); font-style: italic; font-weight: 400; co
   .doc-table { min-width: 0; }
 }
 .sign-art { display: block; width: min(320px, 78vw); height: auto; margin: 0 auto 22px; border-radius: 16px; box-shadow: 0 20px 60px rgba(0, 0, 0, .5); }
+.sign-card { display: block; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); transition: transform .2s ease; }
+.sign-card img { display: block; width: 100%; height: auto; }
+.sign-card:hover { transform: translateY(-3px); }
+.sign-card:focus-visible { outline: 2px solid var(--orchid); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .sign-card { transition: none; } .sign-card:hover { transform: none; } }

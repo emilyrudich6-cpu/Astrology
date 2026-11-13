@@ -209,7 +209,7 @@ export function fullChartCalc(b: BirthData, now: Date) {
       dominant: dom, retroDetail: retros, today: { date: longDay(now), moonPhase: today.moonPhase, sky: today.sky, aspects: today.aspectsToNatal.slice(0, 10) },
       lunationsSoon: sky.lunations.filter(l => new Date(l.date) <= addDays(now, 75)),
       keyWindows: grouped.keyWindows.slice(0, 12), ingresses: sky.ingresses.filter(i => i.enters.startsWith("your natal house")),
-      progressions: prog, angles: c.angles, points: c.points, chartRuler: c.chartRuler, sect: c.sect,
+      progressions: prog, angles: c.angles?.filter(a => a.name !== "Descendant"), points: c.points, chartRuler: c.chartRuler, sect: c.sect,
       speeds: c.planets.map(p => ({ planet: p.name, speed: p.speed, speedClass: p.speedClass, retrograde: p.retrograde })),
       declinations: c.planets.map(p => ({ planet: p.name, declination: p.declination, outOfBounds: p.outOfBounds })),
       hemispheres: c.hemispheres,
@@ -235,13 +235,15 @@ DATA RULE: every position, house, aspect, orb, speed, star and date you mention 
 
 VOICE: write to the reader as "you": warm, direct, specific and a little bold, like a sharp friend who really knows astrology. Explain jargon in a few plain words the first time. Interpret; every placement answers "so what does this mean for me?". Short paragraphs. Plain text only: no Markdown, no headings inside fields. Use **double asterisks** sparingly for a key phrase or date. Never mention software, calculations, data, JSON or AI.
 
+LEFT OUT ON PURPOSE: never mention Chiron, the Vertex or the Descendant. The Descendant belongs to compatibility readings, not this one. (The 7th house can still be described as a house.)
+
 BOUNDARIES: no medical, legal, financial or psychological advice; never predict death, illness, pregnancy, accidents or disasters; never promise outcomes. Rituals are simple and safe (journaling, intention-setting, a candle never left unattended).`;
 
 const schemaPortrait = obj({
   glanceIntro: str("2-3 sentence portrait of the whole person, e.g. how the Rising, Sun and Moon play together"),
   glanceLines: arr({ label: str("the row label exactly as given"), line: str("one line, under 9 words") }, "One line for each At a Glance row"),
   headline: strArr("'The headline': 2-4 paragraphs on the most unusual, defining features of this chart"),
-  angles: arr({ name: str("Ascendant, Midheaven, Descendant or IC"), subtitle: str("e.g. 'how you arrive', 'what you're known for', 'who you attract', 'your roots'"), text: str("1-2 paragraphs, including planets near it, aspects to it and any fixed star on it") }, "The four angles (skip if there are no angles)"),
+  angles: arr({ name: str("Ascendant, Midheaven or IC"), subtitle: str("e.g. 'how you arrive', 'what you're known for', 'your roots'"), text: str("1-2 paragraphs, including planets near it, aspects to it and any fixed star on it") }, "Three angles: Ascendant, Midheaven and IC, in that order (never the Descendant; empty array if there are no angles)"),
   planets: arr({ heading: str("e.g. 'Sun in Libra, 11th house' or 'Moon in Pisces, 4th house, conjunct Saturn'"), text: str("one rich paragraph") }, "Planet by planet: Sun to Pluto, then the Nodes, Black Moon Lilith and Part of Fortune"),
   housesWeight: str("'Where the weight sits': which houses are full and empty, and how empty houses work through their rulers"),
   hemispheres: str("one paragraph on the hemisphere balance"),
@@ -306,13 +308,13 @@ export async function fullChartReading(b: BirthData, now = new Date()) {
   const calc = fullChartCalc(b, now);
   const { chart: c, _ctx, ...shown } = calc;
   const natal = {
-    bigThree: c.bigThree, chartRuler: c.chartRuler, angles: c.angles, planets: c.planets, points: c.points,
+    bigThree: c.bigThree, chartRuler: c.chartRuler, angles: c.angles?.filter(a => a.name !== "Descendant"), planets: c.planets, points: c.points,
     aspects: c.aspects.slice(0, 30), houseCusps: c.houseCusps?.map(h => `${h.house}: ${h.position}`), warnings: c.warnings,
   };
   const name = c.name;
   const [portrait, structure, timeline] = await Promise.all([
     writeJSON<any>(SYSTEM,
-      `Write the first part of ${name}'s Full Chart: At a Glance (a line for each row in "glance"), the headline, the four angles, planet by planet, and the houses commentary. Make the headline about what is genuinely unusual here (dignities, stations near birth, stars on angles, prenatal eclipses on natal points, stelliums).`,
+      `Write the first part of ${name}'s Full Chart: At a Glance (a line for each row in "glance"), the headline, the angles (Ascendant, Midheaven, IC), planet by planet, and the houses commentary. Make the headline about what is genuinely unusual here (dignities, stations near birth, stars on angles, prenatal eclipses on natal points, stelliums).`,
       { natal, glance: shown.glance, houses: shown.houseRows, wholeSignShifts: shown.wholeSignShifts, stars: shown.stars,
         stationsNearBirth: shown.stationsNearBirth, prenatalEclipses: _ctx.eclipses, dominant: _ctx.dominant, hemispheres: _ctx.hemispheres,
         chartShape: _ctx.chartShape, patterns: _ctx.patterns, sect: _ctx.sect },

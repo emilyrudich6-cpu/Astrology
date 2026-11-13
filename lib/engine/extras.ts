@@ -81,7 +81,7 @@ export function fixedStars(c: NatalChart, orb = 1.5) {
   const shift = (50.29 * years) / 3600;
   const pts = [
     ...c.planets.map(p => ({ name: p.name as string, lon: p.lon })),
-    ...(c.angles ? c.angles.map(a => ({ name: a.name, lon: a.lon })) : []),
+    ...(c.angles ? c.angles.filter(a => a.name !== "Descendant").map(a => ({ name: a.name, lon: a.lon })) : []),
     { name: "North Node", lon: c.points[0].lon },
   ];
   const hits: { star: string; on: string; orb: string; orbDeg: number; starPosition: string; flavour: string }[] = [];
@@ -257,7 +257,7 @@ export function progressions(c: NatalChart, now: Date, horizonYears = 16) {
 
   // Milestones: scan month by month
   const milestones: { date: string; age: number; event: string }[] = [];
-  const targets = natalTargets(c).concat(c.angles ? c.angles.filter(a => a.name === "Descendant" || a.name === "IC").map(a => ({ name: a.name, lon: a.lon, house: null })) : []);
+  const targets = natalTargets(c).concat(c.angles ? c.angles.filter(a => a.name === "IC").map(a => ({ name: a.name, lon: a.lon, house: null })) : []);
   let prev: any = null;
   for (let m = -1; m <= horizonYears * 12; m++) {
     const a = age + m / 12;

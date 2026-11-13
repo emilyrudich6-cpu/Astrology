@@ -61,8 +61,8 @@ export default function FullChartView({ doc }: { doc: FullChartDoc }) {
       </Section>
 
       {t.angles?.length > 0 && c.wheel.asc != null && (
-        <Section title="The Four Angles" intro="The angles are the most personal points in a chart. They depend on your exact birth minute and place.">
-          {t.angles.map((a, i) => (
+        <Section title="The Angles" intro="The angles are the most personal points in a chart. They depend on your exact birth minute and place. (Your Descendant, the partner point, is read in your synastry readings.)">
+          {t.angles.filter(a => !/descendant/i.test(a.name)).map((a, i) => (
             <div key={i} className="doc-item">
               <h3>{a.name} <span className="doc-sub">— {a.subtitle}</span></h3>
               <Rich text={a.text} />
@@ -187,7 +187,7 @@ export default function FullChartView({ doc }: { doc: FullChartDoc }) {
 
       <section className="doc-section doc-fine">
         <h3>How this was calculated</h3>
-        <p>Tropical zodiac, Placidus houses, true lunar node (mean node in brackets), mean Black Moon Lilith. Aspect orbs up to 8° for majors and 2° for minors. Transit dates are exact-hit dates in Universal Time, so the local date can be a day earlier. Human Design uses the standard 88° solar-arc Design calculation. Chiron isn't included.</p>
+        <p>Tropical zodiac, Placidus houses, true lunar node (mean node in brackets), mean Black Moon Lilith. Aspect orbs up to 8° for majors and 2° for minors. Transit dates are exact-hit dates in Universal Time, so the local date can be a day earlier. Human Design uses the standard 88° solar-arc Design calculation. Chiron and the Vertex aren't included, and the Descendant is saved for your synastry readings.</p>
         <p>Astrology, Human Design and numerology are frameworks for reflection and fun. This reading is for entertainment and self-exploration, not a prediction of fixed outcomes.</p>
       </section>
     </div>
