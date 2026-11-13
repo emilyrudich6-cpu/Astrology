@@ -50,7 +50,9 @@ Don't mention data, software, AI or calculations. No medical, legal or financial
 async function write(prompt: string, maxTokens: number): Promise<string> {
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
   const msg = await client.messages.create({ model: ANTHROPIC_MODEL, max_tokens: maxTokens, system: SYSTEM, messages: [{ role: "user", content: prompt }] });
-  return msg.content.map(b => (b.type === "text" ? b.text : "")).join("").trim();
+  const text = msg.content.map(b => (b.type === "text" ? b.text : "")).join("").trim();
+  if (!text) throw new Error(`empty reply (stop_reason: ${msg.stop_reason})`);
+  return text;
 }
 
 export type FreeResult = { text: string } | { error: string };
@@ -66,7 +68,7 @@ function slim(c: NatalChart) {
 export async function dominantText(birthKey: string, c: NatalChart, dom: DominantResult, uncertain: string[], ip: string): Promise<FreeResult> {
   const key = "dom2:" + sha(birthKey);
   const hit = await cached(key);
-  if (hit) return { text: hit };
+  if (hit && hit.trim()) return { text: hit };
   if (!process.env.ANTHROPIC_API_KEY) return { error: "Interpretations switch on once the site's Claude key is added." };
   if (!(await allow(ip))) return { error: "You've explored a lot of charts today. Come back tomorrow for more interpretations." };
   const text = await write(
@@ -76,7 +78,7 @@ export async function dominantText(birthKey: string, c: NatalChart, dom: Dominan
 3) Connect it to this real aspect: ${dom.keyAspect ? `${dom.planet} ${dom.keyAspect.aspect} ${dom.keyAspect.with} (orb ${dom.keyAspect.orb}°, ${dom.keyAspect.motion})` : "none"}${dom.house ? ` and to its house (${dom.house})` : " (birth time unknown, so skip houses)"}.
 4) End with a final short paragraph that begins exactly "In plain English:" and gives one clear, practical takeaway.
 Uncertain placements: ${uncertain.length ? uncertain.join(", ") : "none"}.
-CHART: ${JSON.stringify(slim(c))}`, 750);
+CHART: ${JSON.stringify(slim(c))}`, 1200);
   await store(key, text);
   return { text };
 }
@@ -88,15 +90,15 @@ const TOPIC_BRIEF: Record<string, string> = {
 };
 
 export async function topicText(birthKey: string, c: NatalChart, topic: "love" | "work" | "growth", uncertain: string[], ip: string, sample?: string | null): Promise<FreeResult> {
-  const key = `topic:${topic}:` + sha(birthKey);
+  const key = `topic2:${topic}:` + sha(birthKey);
   const hit = await cached(key);
-  if (hit) return { text: hit };
+  if (hit && hit.trim()) return { text: hit };
   if (!process.env.ANTHROPIC_API_KEY) return { error: "Insights switch on once the site's Claude key is added." };
   if (!(await allow(ip))) return { error: "You've explored a lot of charts today. Come back tomorrow for more insights." };
   const text = await write(
     `Write one short insight (90 to 120 words, one or two paragraphs) about ${TOPIC_BRIEF[topic]} for this chart. Name the specific placements you draw on.${sample ? ` End with one sentence that points to this upcoming date from their timeline: ${sample}.` : ""}
 Uncertain placements: ${uncertain.length ? uncertain.join(", ") : "none"}.
-CHART: ${JSON.stringify(slim(c))}`, 400);
+CHART: ${JSON.stringify(slim(c))}`, 900);
   await store(key, text);
   return { text };
 }

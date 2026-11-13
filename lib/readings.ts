@@ -46,7 +46,10 @@ async function write(task: string, data: unknown, maxTokens = 9000): Promise<str
     system: SYSTEM,
     messages: [{ role: "user", content: `${task}\n\nCHART DATA (JSON):\n${JSON.stringify(data)}` }],
   });
-  return msg.content.map(b => (b.type === "text" ? b.text : "")).join("").trim();
+  const text = msg.content.map(b => (b.type === "text" ? b.text : "")).join("").trim();
+  // Never deliver a blank reading: failing here lets the pipeline retry it
+  if (!text) throw new Error(`empty reply (stop_reason: ${msg.stop_reason})`);
+  return text;
 }
 
 const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);

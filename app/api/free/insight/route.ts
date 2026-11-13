@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   try {
     const r = await topicText(fc.key, fc.chart, topic, fc.uncertain.map(u => `${u.planet} (${u.signs.join(" or ")})`), clientIp(req), sampleText);
     // No Claude key or daily limit reached: still give a real, chart-specific insight
-    return NextResponse.json("text" in r ? { ...r, sample } : { text: fallback, sample });
+    return NextResponse.json("text" in r && r.text.trim() ? { ...r, sample } : { text: fallback, sample });
   } catch (e) {
     console.error("free insight", e);
     return NextResponse.json({ text: fallback, sample });
