@@ -82,7 +82,7 @@ export default function SeeingNumbers({ initial, cap, compare, deep }: { initial
       )}
 
       {showForm ? (
-        <form onSubmit={submit} className="panel sn-form">
+        <form onSubmit={submit} className="panel sn-form" id="log">
           {editing && <p className="hint">Editing an entry. <button type="button" className="linklike" onClick={reset}>Cancel</button></p>}
           <div className="field"><label htmlFor="sn-number">What number did you see?</label>
             <input id="sn-number" inputMode="text" autoComplete="off" placeholder="444, 12:12, 1133…" value={number} onChange={e => setNumber(e.target.value)} /></div>

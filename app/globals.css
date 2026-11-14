@@ -12,7 +12,7 @@
   --line: #3b2a42;         /* hairlines */
   --paper: #f1e9da;        /* ivory */
   --silver: #c8c3cf;
-  --muted: #a898ab;
+  --muted: #bdb0c1;      /* brightened for small text on phones */
   --orchid: #b9a5cf;       /* dusty lavender: the one accent */
   --orchid-ink: #1d0f22;
   --glow: #8b5cc6;
@@ -272,7 +272,7 @@ h3.group { font-family: var(--display); font-style: italic; font-weight: 400; co
 .duo-kicker { font-family: var(--display); font-style: italic; color: var(--brass); font-size: 1.15rem; margin: 0; }
 .duo h1 { font-size: var(--step-3); margin: .1em 0 .3em; }
 .duo .support { color: var(--silver); max-width: 30rem; margin-inline: auto; }
-.duo-wheels { position: relative; height: 290px; margin: 26px auto 10px; max-width: 420px; }
+.duo-wheels { position: relative; aspect-ratio: 4 / 3; margin: 22px auto 6px; max-width: 420px; }
 .duo-wheels .w1, .duo-wheels .w2 { position: absolute; top: 0; width: 64%; }
 .duo-wheels .w1 { left: 0; opacity: .9; }
 .duo-wheels .w2 { right: 0; top: 34px; opacity: .75; mix-blend-mode: screen; filter: sepia(.6) saturate(1.4) hue-rotate(-10deg); }
@@ -493,3 +493,76 @@ h3.group { font-family: var(--display); font-style: italic; font-weight: 400; co
 .offer-name { margin: 0; font-family: var(--display); font-size: 1.2rem; color: var(--paper); }
 .offer-summary .hint { margin: 2px 0 0; }
 .offer-price { margin: 0; font-family: var(--display); font-size: 1.3rem; color: var(--orchid); white-space: nowrap; }
+
+/* Phase 2 (design): the strongest button on each screen */
+.btn.primary { padding: 15px 26px; font-size: 1rem; box-shadow: 0 10px 30px -8px rgba(139, 92, 198, .75), inset 0 0 0 1px rgba(255, 255, 255, .18); }
+.btn.block { display: block; width: 100%; text-align: center; }
+.btn.brass.primary { box-shadow: 0 10px 30px -8px rgba(194, 160, 106, .55), inset 0 0 0 1px rgba(255, 255, 255, .2); }
+
+/* Free chart reveal: Sun, Moon, Rising under a violet eclipse */
+.reveal { position: relative; overflow: hidden; margin: 6px -4px 28px; padding: 16px 12px 14px; border-radius: 24px; border: 1px solid #4a3553;
+  background: radial-gradient(90% 55% at 50% 0%, rgba(139, 92, 198, .32), transparent 70%), radial-gradient(60% 40% at 100% 100%, rgba(139, 92, 198, .14), transparent 70%), var(--ink); }
+.reveal::before { content: ""; position: absolute; width: 190px; height: 190px; top: -118px; right: -48px; border-radius: 50%; background: var(--ink);
+  box-shadow: 0 0 46px 8px rgba(139, 92, 198, .55), inset 0 0 0 1px rgba(185, 165, 207, .4); pointer-events: none; }
+.reveal > * { position: relative; }
+.reveal-cards { display: grid; gap: 10px; }
+.reveal-card { display: grid; grid-template-columns: 44px 1fr; grid-template-areas: "glyph lab" "glyph sign" "line line"; column-gap: 12px; align-items: center;
+  padding: 12px 14px 14px; border-radius: 18px; background: rgba(33, 16, 42, .9); border: 1px solid #4a3553; }
+.reveal-glyph { grid-area: glyph; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  font-family: var(--display); font-size: 1.3rem; color: var(--orchid); border: 1px solid rgba(185, 165, 207, .5); box-shadow: 0 0 18px rgba(139, 92, 198, .4); }
+.reveal-card .reveal-lab { grid-area: lab; align-self: end; }
+.reveal-card .reveal-sign { grid-area: sign; align-self: start; }
+.reveal-card .reveal-line { grid-area: line; }
+.reveal-card.unknown .reveal-glyph { opacity: .7; box-shadow: none; }
+.reveal-lab { margin: 0; font-size: .82rem; color: #d8cde0; }
+.reveal-sign { margin: 0; font-family: var(--display); font-size: 1.75rem; line-height: 1.1; color: var(--paper); }
+.reveal-card.unknown .reveal-sign { font-size: 1.35rem; font-style: italic; }
+.reveal-deg { font-family: var(--body); font-size: .85rem; color: #d8cde0; }
+.reveal-or { font-style: italic; font-size: 1.2rem; color: #d8cde0; }
+.reveal-line { margin: 8px 0 0; font-size: .92rem; line-height: 1.42; color: #e6dde9; }
+.reveal-line a, .reveal-foot a { color: var(--paper); }
+.reveal-insight { margin: 14px 4px 16px; padding: 14px 0 0; border-top: 1px solid #4a3553; }
+.reveal-title { margin: 4px 0 6px; font-family: var(--display); font-style: italic; font-size: 1.35rem; line-height: 1.2; color: var(--paper); }
+.reveal-text { margin: 0; font-size: .95rem; line-height: 1.48; color: #ece4ee; }
+.reveal-basis { margin: 8px 0 0; font-size: .8rem; color: #c9bccf; }
+.reveal-foot { margin: 12px 0 0; text-align: center; font-size: .88rem; color: #d8cde0; }
+.reveal-mark { margin: 14px 0 0; text-align: center; font-family: var(--display); font-style: italic; font-size: .95rem; color: rgba(185, 165, 207, .75); }
+@media (min-width: 720px) { .reveal { padding: 28px 26px 20px; } .reveal-cards { grid-template-columns: repeat(3, 1fr); } .reveal-card { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+  .reveal-card { grid-template-areas: "glyph" "lab" "sign" "line"; } .reveal-glyph { margin-bottom: 8px; } .reveal-card .reveal-lab, .reveal-card .reveal-sign { align-self: auto; } }
+
+/* Homepage: free chart button with its promise beside it */
+.free-row { display: flex; align-items: center; gap: 14px; }
+.free-row .btn { flex: none; }
+.free-note { font-size: .86rem; line-height: 1.35; color: #e1d7e5; }
+.nowrap { white-space: nowrap; }
+
+/* Synastry sample: the best line up top, jump links, key dates in the offer */
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+.duo-sec, .duo-example { scroll-margin-top: 80px; }
+.duo-insight { margin: 4px auto 14px; max-width: 26rem; padding: 14px 16px; border-radius: 16px; text-align: left;
+  background: rgba(22, 33, 63, .9); border: 1px solid #3a4268; }
+.duo-insight figcaption { font-size: .8rem; color: var(--brass); }
+.duo-insight figcaption span { color: #cfd4e6; }
+.duo-insight blockquote { margin: 6px 0 0; font-family: var(--display); font-style: italic; font-size: 1.25rem; line-height: 1.35; color: var(--paper); }
+.duo-jump { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 auto 18px; }
+.duo-jump a { font-size: .88rem; color: var(--paper); text-decoration: none; padding: 8px 12px; border-radius: 999px; border: 1px solid #3a4268; background: rgba(22, 33, 63, .6); }
+.duo-jump a:hover { border-color: var(--brass); }
+.duo-offer { max-width: 26rem; margin: 0 auto 14px; font-size: .98rem; color: #e3e6f0; }
+.duo-offer strong { color: var(--brass); font-weight: 600; }
+.duo .hint, .duo-sec p { color: #d4d8e6; }
+.duo .hint a { color: var(--paper); }
+
+/* Seeing Numbers dashboard card */
+.sn-card { background: radial-gradient(80% 70% at 100% 0%, rgba(139, 92, 198, .22), transparent 70%), var(--ink-2); }
+.sn-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.sn-card-head h3 { margin: 0; }
+.sn-card-private { font-size: .8rem; color: #d8cde0; }
+.sn-card-body { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; margin: 12px 0 14px; }
+.sn-card-num { margin: 0; font-family: var(--display); font-size: 2.6rem; line-height: 1; color: var(--paper); text-shadow: 0 0 22px rgba(139, 92, 198, .6); }
+.sn-card-line { margin: 0; font-size: .92rem; line-height: 1.45; color: #e6dde9; }
+.sn-card-line strong { color: var(--paper); }
+.sn-card-example { display: inline-block; font-size: .72rem; padding: 2px 8px; margin-right: 4px; border-radius: 999px; border: 1px solid rgba(185, 165, 207, .5); color: var(--orchid); vertical-align: 1px; }
+.sn-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.sn-card-link { color: var(--paper); font-size: .92rem; }
+#log { scroll-margin-top: 80px; }

@@ -66,3 +66,19 @@ export function whenLabel(e: { seen_local_date: string; seen_local_time: string 
   const day = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
   return e.seen_local_time ? `${day} · ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })}` : day;
 }
+
+/** The number someone has logged most (12:12 and 1212 count as one), shown the way they usually write it.
+ *  Ties go to the one seen most recently. */
+export function mostLogged(entries: { number_raw: string; number_norm: string; seen_at: string }[]) {
+  if (!entries.length) return null;
+  const groups = new Map<string, { count: number; last: string; raws: Map<string, number> }>();
+  for (const e of entries) {
+    const g = groups.get(e.number_norm) ?? { count: 0, last: "", raws: new Map() };
+    g.count++; if (e.seen_at > g.last) g.last = e.seen_at;
+    g.raws.set(e.number_raw, (g.raws.get(e.number_raw) ?? 0) + 1);
+    groups.set(e.number_norm, g);
+  }
+  const [, top] = [...groups.entries()].sort((a, b) => b[1].count - a[1].count || b[1].last.localeCompare(a[1].last))[0];
+  const shown = [...top.raws.entries()].sort((a, b) => b[1] - a[1])[0][0];
+  return { number: shown, count: top.count, total: entries.length };
+}

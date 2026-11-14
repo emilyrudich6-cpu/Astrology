@@ -12,6 +12,8 @@ import AutoRefresh from "@/components/AutoRefresh";
 import StartFullChart from "@/components/StartFullChart";
 import WritingLoader from "@/components/WritingLoader";
 import Numerology from "@/components/Numerology";
+import SeeingNumbersCard from "@/components/SeeingNumbersCard";
+import { mostLogged } from "@/lib/seeing-numbers";
 import OfferSummary from "@/components/OfferSummary";
 import StripePreconnect from "@/components/StripePreconnect";
 import { offer } from "@/lib/offers";
@@ -51,6 +53,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const { data: people } = await db.from("people").select("id,name,relationship").eq("user_id", user.id).eq("purchased", false).order("created_at");
 
   const chart = natalChart(birthFromRow(profile));
+  const { data: sightings } = await db.from("journal_entries").select("number_raw,number_norm,seen_at").eq("user_id", user.id).limit(1000);
   const askShare = await sharePrompt(user.id);
   const invite = FEATURES.referrals ? { code: await getInviteCode(user.id), state: await inviteStatus(user.id) } : null;
   const wantPlan = plan === "timeline" || plan === "deep" ? plan : null;
@@ -69,6 +72,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <p style={{ margin: 0 }}>☉ {chart.bigThree.sun}<br />☽ {chart.bigThree.moon}<br />AC {chart.bigThree.ascendant}</p>
           <p className="hint" style={{ marginTop: 10 }}>{profile.birth_place} · <Link href="/onboarding">Edit birth details</Link></p>
         </div>
+        <SeeingNumbersCard top={mostLogged(sightings ?? [])} />
         <div className="panel">
           <Numerology birthDate={profile.birth_date} serverYear={new Date().getUTCFullYear()} compact />
         </div>

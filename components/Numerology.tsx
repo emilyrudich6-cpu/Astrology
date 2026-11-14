@@ -67,8 +67,8 @@ export default function Numerology({ birthDate, serverYear, compact = false }: {
       </details>
 
       <p className="num-prompt"><em>{LIFE_PATH_QUESTION[lp.value]}</em></p>
-      <p className="num-seeing">Keep seeing the same number? Save what you saw and what was on your mind.{" "}
-        <Link className="link-arrow" href="/seeing-numbers">Open Seeing Numbers →</Link></p>
+      {!compact && <p className="num-seeing">Keep seeing the same number? Save what you saw and what was on your mind.{" "}
+        <Link className="link-arrow" href="/seeing-numbers">Open Seeing Numbers →</Link></p>}
 
       <div className="num-name">
         {!open ? (

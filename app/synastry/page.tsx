@@ -18,20 +18,20 @@ export const metadata: Metadata = {
 const MARA = { name: "Mara", date: "1993-04-17", time: "21:15", timezone: "America/Los_Angeles", latitude: 45.5152, longitude: -122.6784, place: "Portland" };
 const THEO = { name: "Theo", date: "1991-10-02", time: "07:40", timezone: "America/Chicago", latitude: 41.8781, longitude: -87.6298, place: "Chicago" };
 
-const SECTIONS: { title: string; body: string[] }[] = [
-  { title: "Attraction", body: [
+const SECTIONS: { id: string; title: string; body: string[] }[] = [
+  { id: "attraction", title: "Attraction", body: [
     "Mara's Aries Sun lands in Theo's 7th house, the house of partnership. To Theo, she can feel less like a date and more like the person he's been waiting for. Her Sun also makes an easy trine to his Venus in Leo, less than a degree from exact: he admires her nerve, and she lights up around his warmth.",
     "Her Midheaven sits on his Venus too. Theo is drawn to what Mara is building in the world, and he's likely to be her loudest fan." ] },
-  { title: "Communication", body: [
+  { id: "communication", title: "Communication", body: [
     "Mara's Jupiter sits almost exactly on Theo's Mercury and close to his Sun, all in Libra. Talking with her makes his ideas feel bigger and more possible. Conversations run long and generous.",
     "Theo's Sun, Mercury and Mars all fall in Mara's 11th house of friendship. Whatever else this is, it starts as two people who genuinely like each other." ] },
-  { title: "Friction", body: [
+  { id: "friction", title: "Friction", body: [
     "Mara's Sun squares Theo's Cancer Moon within half a degree. Her directness is honest, but it can land on his softest spot. He may need more reassurance than she naturally thinks to give.",
     "Her Saturn opposes his Venus, so she can come across as the realist who questions his plans for pleasure and spending. Said with care, it steadies him. Said in a hurry, it stings." ] },
-  { title: "The pattern you repeat", body: [
+  { id: "pattern", title: "The pattern you repeat", body: [
     "Mara's Neptune squares Theo's Mars and opposes his Midheaven, both within a degree. She can idealize where he's headed, then feel confused when his drive goes somewhere she didn't picture. The fix is simple and hard: ask, don't assume.",
     "Theo's Pluto sits in Mara's 1st house, near her Ascendant. Being with him changes how she sees herself. It's intense, and it's part of why this one doesn't feel casual." ] },
-  { title: "When your timelines line up", body: [
+  { id: "timelines", title: "When your timelines line up", body: [
     "From mid-November 2026 to mid-January 2027, Jupiter crosses Mara's Midheaven while it crosses Theo's Venus: a good window to make something public, like a move, a launch or an announcement together.",
     "At the same time, Saturn opposes Mara's Jupiter and Theo's Sun, so expect a reality check about what you can both carry. Late June to July 2027, Uranus trines her Jupiter and his Sun, bringing a lighter, more spontaneous stretch." ] },
 ];
@@ -65,18 +65,27 @@ export default function TwoOfYou() {
           <div className="w1">{wheel(a, "Mara's chart (fictional)")}</div>
           <div className="w2">{wheel(b, "Theo's chart (fictional)")}</div>
         </div>
+        <figure className="duo-insight">
+          <figcaption>From Mara &amp; Theo&apos;s example reading <span>(fictional)</span></figcaption>
+          <blockquote>Her Aries Sun trines his Venus in Leo, less than a degree from exact: he admires her nerve, and she lights up around his warmth.</blockquote>
+        </figure>
+        <nav className="duo-jump" aria-label="Jump to a part of the example">
+          <a href="#attraction">Attraction</a><a href="#friction">Friction</a><a href="#timelines">When your timelines line up</a>
+        </nav>
         <div className="duo-cta">
-          <Link className="btn brass" href={`/login?next=${encodeURIComponent("/buy/synastry")}`}>Get my synastry reading, {offer.price} once</Link>
+          <p className="duo-offer">Their timelines line up <strong>mid-November 2026 to mid-January 2027</strong> and again in <strong>late June to July 2027</strong>. Yours shows the dates for the two of you.</p>
+          <Link className="btn brass primary" href={`/login?next=${encodeURIComponent("/buy/synastry")}`}>Get my synastry reading, {offer.price} once</Link>
           <p className="hint">One-time. Both charts included, plus a free month of your own timeline. Or get {TIERS.deep.compatPerMonth} a month with <Link href="/#plans">Deep Dive, {TIERS.deep.price.replace(" / ", "/")}</Link>.</p>
+          <p className="hint"><a href="#example">Read the full example reading ↓</a></p>
         </div>
       </section>
 
-      <section className="narrow duo-example">
+      <section className="narrow duo-example" id="example">
         <p className="duo-label">Example reading. Mara and Theo are fictional, and so are their birth details.</p>
         <h2>Mara & Theo</h2>
         <p className="hint">Mara: {a.bigThree.sun.replace(/^\S+\s/, "")} Sun, {a.bigThree.moon.replace(/^\S+\s/, "")} Moon, {a.bigThree.ascendant.replace(/^\S+\s/, "")} Rising. Theo: {b.bigThree.sun.replace(/^\S+\s/, "")} Sun, {b.bigThree.moon.replace(/^\S+\s/, "")} Moon, {b.bigThree.ascendant.replace(/^\S+\s/, "")} Rising.</p>
         {SECTIONS.map(s => (
-          <article key={s.title} className="duo-sec">
+          <article key={s.title} id={s.id} className="duo-sec">
             <h3>{s.title}</h3>
             {s.body.map((p, i) => <p key={i}>{p}</p>)}
           </article>
@@ -89,7 +98,7 @@ export default function TwoOfYou() {
           </table>
         </details>
         <div className="duo-cta" style={{ marginTop: 30 }}>
-          <Link className="btn brass" href={`/login?next=${encodeURIComponent("/buy/synastry")}`}>Get yours, {offer.price} once</Link>
+          <Link className="btn brass primary" href={`/login?next=${encodeURIComponent("/buy/synastry")}`}>Get yours, {offer.price} once</Link>
         </div>
       </section>
       <div className="narrow" style={{ paddingBottom: 40 }}><Invite /></div>

@@ -9,6 +9,8 @@ import { HOUSE_THEMES } from "@/lib/engine/transits";
 import { signByName } from "@/lib/signs";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import Numerology from "@/components/Numerology";
+import ChartReveal from "@/components/ChartReveal";
+import { revealInsight } from "@/lib/reveal";
 
 export const metadata: Metadata = { title: "Your chart · Vertex Point", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -58,19 +60,21 @@ export default async function Result({ searchParams }: { searchParams: Promise<{
         <p className="hint">{born}{b.time ? ` at ${b.time}` : ", time unknown"}, {b.place}</p>
       </header>
 
+      <ChartReveal who={who} hasTime={!!b.time}
+        insight={revealInsight(c, !!unc.Moon, { planet: d.planet, sign: d.sign })}
+        cards={[
+          { key: "sun", planet: "Sun", glyph: "☉" + T, role: "who you are", sign: P.Sun.sign, degree: Math.floor(P.Sun.degree) },
+          { key: "moon", planet: "Moon", glyph: "☽" + T, role: "what you need", sign: unc.Moon ? null : P.Moon.sign, alt: unc.Moon ? [unc.Moon[0], unc.Moon[1]] : null, degree: unc.Moon ? null : Math.floor(P.Moon.degree) },
+          { key: "rising", planet: "Rising", glyph: "AC", role: "first impression", sign: rising, degree: rising ? Math.floor(c.angles![0].lon % 30) : null },
+        ]} />
+
+      {!b.time && uncertain.some(u => u.planet !== "Moon") && (
+        <p className="notice">Your {uncertain.filter(u => u.planet !== "Moon").map(u => u.planet).join(" and ")} changed sign on the day you were born, so {uncertain.filter(u => u.planet !== "Moon").length > 1 ? "those are" : "that's"} marked as uncertain below.</p>
+      )}
+
       <ChartWheel label={`${who} wheel`} asc={c.angles?.[0].lon ?? null} cusps={c.houseCusps?.map(h => h.lon) ?? null}
         planets={c.planets.map(p => ({ name: p.name, lon: p.lon, retrograde: p.retrograde }))}
         aspects={c.aspects.filter(a => a.major).map(a => ({ a: a.a, b: a.b, aspect: a.aspect }))} />
-
-      <h2 className="sr-only">Your Big Three</h2>
-      <div className="big3">
-        <div><span className="lab">Sun</span><span className="val">{P.Sun.sign}</span><span className="deg">{Math.floor(P.Sun.degree)}°</span></div>
-        <div><span className="lab">Moon</span><span className="val">{unc.Moon ? "?" : P.Moon.sign}</span><span className="deg">{unc.Moon ? `${unc.Moon[0]} or ${unc.Moon[1]}` : `${Math.floor(P.Moon.degree)}°`}</span></div>
-        <div><span className="lab">Rising</span><span className="val">{rising ?? "—"}</span><span className="deg">{rising ? `${Math.floor(c.angles![0].lon % 30)}°` : "needs birth time"}</span></div>
-      </div>
-      {!b.time && (
-        <p className="notice">Without a birth time we've left out your Rising sign and houses.{uncertain.length > 0 && <> Your {uncertain.map(u => u.planet).join(" and ")} changed sign on the day you were born, so {uncertain.length > 1 ? "those are" : "that's"} marked as uncertain.</>} <Link href="/chart">Add your birth time</Link> to see the rest.</p>
-      )}
 
       <p className="other-signs no-print"><span className="hint">Find your other signs:</span>{" "}
         {bigThreeLinks.map((x, i) => <span key={x.lab}>{i > 0 && ", "}<Link href={`/signs/${signByName(x.sign)!.slug}${x.tab}`}>{x.sign} {x.lab}</Link></span>)}

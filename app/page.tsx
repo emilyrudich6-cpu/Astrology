@@ -26,7 +26,10 @@ export default async function Home() {
           <p className="sub">Get to know what the rest of the sky says about you.</p>
           <p className="support">Explore a comprehensive astrological chart based on the sky at the time and place you were born.</p>
           <div className="hero-actions">
-            <Link className="btn" href="/chart">Get my free chart</Link>
+            <div className="free-row">
+              <Link className="btn primary" href="/chart">Get my free chart</Link>
+              <span className="free-note">Free · <span className="nowrap">No account needed</span></span>
+            </div>
             <Link className="compare-link" href="/synastry">Or compare your chart with someone ♡</Link>
           </div>
         </div>
