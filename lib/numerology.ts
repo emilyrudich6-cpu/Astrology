@@ -184,3 +184,19 @@ export const YEAR_PROMPT: Record<number, string> = {
   8: "What would you ask for this year if you fully believed you were worth it?",
   9: "What are you ready to let go of before your next chapter begins?",
 };
+
+/** A reflection question for each Life Path */
+export const LIFE_PATH_QUESTION: Record<number, string> = {
+  1: "Where in your life are you waiting for permission you could give yourself?",
+  2: "Whose needs have you been putting ahead of your own, and what do you need right now?",
+  3: "What would you say or make if you didn't worry about how it lands?",
+  4: "What are you building slowly that you're proud of, even if no one sees it yet?",
+  5: "What part of your life is asking for more freedom or change?",
+  6: "Who do you take care of, and how do you let yourself be cared for?",
+  7: "What question have you been carrying that deserves some quiet time?",
+  8: "Where are you ready to ask for what you're worth?",
+  9: "What are you ready to let go of so something new can begin?",
+  11: "What has your intuition been telling you that you haven't acted on yet?",
+  22: "What big vision would you start on if you trusted yourself to finish it?",
+  33: "How do you care for others, and what would it look like to care for yourself the same way?",
+};

@@ -19,7 +19,8 @@ export default function LoginForm({ next, initial = "signup" }: { next: string; 
   async function submit(e: React.FormEvent) {
     e.preventDefault(); setBusy(true); setErr("");
     if (mode === "signup") {
-      const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: callback(next) } });
+      const ref = document.cookie.match(/(?:^|; )vp_ref=([A-Z2-9]+)/)?.[1]; // from an invite link
+      const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: callback(next), ...(ref ? { data: { ref } } : {}) } });
       setBusy(false);
       if (error) {
         if (/registered|exists/i.test(error.message)) setErr(<>You already have an account with this email. <button type="button" className="linklike" onClick={() => go("signin")}>Sign in instead</button></>);

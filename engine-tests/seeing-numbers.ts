@@ -1,0 +1,13 @@
+import { normalizeNumber, interpretNumber } from "../lib/seeing-numbers";
+let f = 0; const eq = (l: string, g: any, w: any) => { const ok = JSON.stringify(g) === JSON.stringify(w); if (!ok) f++; console.log(`${ok ? "ok  " : "FAIL"} ${l}: ${JSON.stringify(g)}`); };
+eq("12:12 and 1212 group", [normalizeNumber("12:12"), normalizeNumber("1212"), normalizeNumber(" 12.12 ")], ["1212", "1212", "1212"]);
+eq("123 and 321 distinct", [normalizeNumber("123"), normalizeNumber("321")], ["123", "321"]);
+eq("444, 1133 accepted", [normalizeNumber("444"), normalizeNumber("1133")], ["444", "1133"]);
+eq("rejects letters/empty", [normalizeNumber("abc"), normalizeNumber(""), normalizeNumber(":12")], [null, null, null]);
+eq("444 meaning", interpretNumber("444")?.meaning.startsWith("Fours repeating"), true);
+eq("1212 curated", interpretNumber("1212")?.title, "12:12");
+eq("123 climbing", interpretNumber("123")?.meaning.startsWith("A climbing"), true);
+eq("321 countdown", interpretNumber("321")?.meaning.startsWith("A countdown"), true);
+eq("1133 curated", interpretNumber("1133")?.title, "11:33");
+eq("unknown -> null (general prompt)", interpretNumber("4172"), null);
+process.exit(f ? 1 : 0);

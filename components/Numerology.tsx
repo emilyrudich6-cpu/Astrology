@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  lifePath, birthdayNumber, personalYear, nameNumbers, LIFE_PATH, BIRTHDAY, PERSONAL_YEAR, SOUL_URGE, EXPRESSION, YEAR_PROMPT, reduce,
+  lifePath, birthdayNumber, personalYear, nameNumbers, LIFE_PATH, BIRTHDAY, PERSONAL_YEAR, SOUL_URGE, EXPRESSION, LIFE_PATH_QUESTION, reduce,
 } from "@/lib/numerology";
 
 const NAME_KEY = "vp-birth-name";
@@ -66,7 +66,7 @@ export default function Numerology({ birthDate, serverYear, compact = false }: {
         <p><strong>Personal Year {py.display}.</strong> Your birth month and day plus {year}: {py.working}. It changes every January 1; in {year + 1} you move into a {next.value} year.</p>
       </details>
 
-      <p className="num-prompt"><em>{YEAR_PROMPT[py.value]}</em></p>
+      <p className="num-prompt"><em>{LIFE_PATH_QUESTION[lp.value]}</em></p>
       <p className="num-seeing">Keep seeing the same number? Save what you saw and what was on your mind.{" "}
         <Link className="link-arrow" href="/seeing-numbers">Open Seeing Numbers →</Link></p>
 

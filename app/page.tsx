@@ -1,4 +1,5 @@
 import Link from "next/link";
+import InvitedBanner from "@/components/InvitedBanner";
 import { BRAND, TIERS, Tier, ONE_TIME, OneTimeKey } from "@/lib/config";
 import NewsletterSignup from "@/components/NewsletterSignup";
 
@@ -22,6 +23,7 @@ function Orbits() {
 export default async function Home() {
   return (
     <>
+      <InvitedBanner />
       <section className="wrap hero">
         <div className="hero-copy">
           <h1>You know your Sun sign.</h1>

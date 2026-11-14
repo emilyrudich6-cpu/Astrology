@@ -12,6 +12,10 @@ import AutoRefresh from "@/components/AutoRefresh";
 import StartFullChart from "@/components/StartFullChart";
 import WritingLoader from "@/components/WritingLoader";
 import Numerology from "@/components/Numerology";
+import InviteCard from "@/components/InviteCard";
+import SharePrompt from "@/components/SharePrompt";
+import { FEATURES } from "@/lib/features";
+import { getInviteCode, inviteLink, inviteStatus, sharePrompt } from "@/lib/referrals";
 import { SIGN_ART } from "@/lib/sign-art";
 import { currentUser, supabaseAdmin, isAdmin } from "@/lib/supabase";
 import { natalChart } from "@/lib/engine/natal";
@@ -44,6 +48,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const { data: people } = await db.from("people").select("id,name,relationship").eq("user_id", user.id).eq("purchased", false).order("created_at");
 
   const chart = natalChart(birthFromRow(profile));
+  const askShare = await sharePrompt(user.id);
+  const invite = FEATURES.referrals ? { code: await getInviteCode(user.id), state: await inviteStatus(user.id) } : null;
   const wantPlan = plan === "timeline" || plan === "deep" ? plan : null;
   const fmt = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: profile.timezone });
   const kindLabel: Record<string, string> = { natal: "your free chart", timeline: "your monthly timeline", question: "an answer to your question", synastry: "a synastry reading", yearahead: "your year-ahead timeline", fullchart: "your Full Chart" };
@@ -102,6 +108,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           </div>
         )}
 
+        {askShare && <SharePrompt inviter={askShare.inviter} />}
         <h2>Your readings</h2>
         {writingNow && <AutoRefresh seconds={20} />}
         {bonusUntil && <div className="notice">Your free month of timeline readings runs until {fmt(bonusUntil.toISOString())}. Want it every month? <a href="/dashboard?plan=timeline">Keep my timeline, {TIERS.timeline.price}</a></div>}
@@ -150,6 +157,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             <p className="hint">{ONE_TIME.synastry.blurb}</p>
           )}
         </section>
+
+        {invite && <InviteCard link={invite.code ? inviteLink(invite.code) : null} state={invite.state} />}
 
         <section className="panel">
           <h3>Monthly timeline and personalized insights</h3>

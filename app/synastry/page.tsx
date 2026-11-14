@@ -4,6 +4,10 @@ import ChartWheel from "@/components/ChartWheel";
 import { natalChart } from "@/lib/engine/natal";
 import { synastry } from "@/lib/engine/transits";
 import { ONE_TIME, TIERS } from "@/lib/config";
+import InviteCard from "@/components/InviteCard";
+import { FEATURES } from "@/lib/features";
+import { currentUser } from "@/lib/supabase";
+import { getInviteCode, inviteLink, inviteStatus } from "@/lib/referrals";
 
 export const metadata: Metadata = {
   title: "Synastry Reading · Vertex Point",
@@ -31,6 +35,17 @@ const SECTIONS: { title: string; body: string[] }[] = [
     "From mid-November 2026 to mid-January 2027, Jupiter crosses Mara's Midheaven while it crosses Theo's Venus: a good window to make something public, like a move, a launch or an announcement together.",
     "At the same time, Saturn opposes Mara's Jupiter and Theo's Sun, so expect a reality check about what you can both carry. Late June to July 2027, Uranus trines her Jupiter and his Sun, bringing a lighter, more spontaneous stretch." ] },
 ];
+
+export const dynamic = "force-dynamic";
+
+async function Invite() {
+  if (!FEATURES.referrals) return null;
+  const user = await currentUser();
+  if (!user) return <InviteCard link={null} state={{ kind: "none" }} signedIn={false} />;
+  const code = await getInviteCode(user.id);
+  if (!code) return null; // no profile yet
+  return <InviteCard link={inviteLink(code)} state={await inviteStatus(user.id)} />;
+}
 
 export default function TwoOfYou() {
   const a = natalChart(MARA), b = natalChart(THEO);
@@ -77,6 +92,7 @@ export default function TwoOfYou() {
           <Link className="btn brass" href={`/login?next=${encodeURIComponent("/dashboard")}`}>Get yours, {offer.price}</Link>
         </div>
       </section>
+      <div className="narrow" style={{ paddingBottom: 40 }}><Invite /></div>
     </div>
   );
 }
