@@ -475,3 +475,21 @@ h3.group { font-family: var(--display); font-style: italic; font-weight: 400; co
 .invite-redeem { margin-top: 12px; }
 .share-prompt h3 { color: var(--rose); }
 .notice.invited { margin-top: 12px; }
+
+/* Readings & Plans */
+#plans { scroll-margin-top: 90px; }
+.plan-rows { list-style: none; padding: 0; margin: 18px 0 0; border-top: 1px solid var(--line); }
+.plan-rows li { display: grid; grid-template-columns: 1fr auto auto; gap: 8px 18px; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.plan-name { margin: 0; font-family: var(--display); font-size: 1.25rem; color: var(--paper); }
+.plan-blurb { margin: 2px 0 0; font-size: var(--step--1); color: var(--silver); }
+.plan-price { margin: 0; font-family: var(--display); font-size: 1.25rem; color: var(--orchid); white-space: nowrap; }
+.plan-soon { white-space: nowrap; }
+@media (max-width: 600px) {
+  .plan-rows li { grid-template-columns: 1fr auto; }
+  .plan-main { grid-column: 1 / -1; }
+}
+/* Offer summary on sign-up and buy pages */
+.offer-summary { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 16px; margin: 18px 0; border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); border-radius: 14px; background: var(--ink-2); }
+.offer-name { margin: 0; font-family: var(--display); font-size: 1.2rem; color: var(--paper); }
+.offer-summary .hint { margin: 2px 0 0; }
+.offer-price { margin: 0; font-family: var(--display); font-size: 1.3rem; color: var(--orchid); white-space: nowrap; }

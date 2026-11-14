@@ -12,6 +12,8 @@ import AutoRefresh from "@/components/AutoRefresh";
 import StartFullChart from "@/components/StartFullChart";
 import WritingLoader from "@/components/WritingLoader";
 import Numerology from "@/components/Numerology";
+import OfferSummary from "@/components/OfferSummary";
+import { offer } from "@/lib/offers";
 import InviteCard from "@/components/InviteCard";
 import SharePrompt from "@/components/SharePrompt";
 import { FEATURES } from "@/lib/features";
@@ -72,13 +74,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <h3>Your plan: {tier.label}</h3>
           {profile.tier === "free" ? (
             <>
-              <p className="hint">Upgrade for monthly timeline updates, or Deep Dive for personalized insights and synastry with anyone you add.</p>
-              <div style={{ display: "grid", gap: 10 }}>
-                <CheckoutButton tier="timeline" label={`Timeline, ${TIERS.timeline.price}`} />
-                <CheckoutButton tier="timeline" interval="year" ghost label={`Timeline, ${TIERS.timeline.yearlyPrice}`} />
-                <CheckoutButton tier="deep" label={`Deep Dive, ${TIERS.deep.price}`} />
-                <CheckoutButton tier="deep" interval="year" ghost label={`Deep Dive, ${TIERS.deep.yearlyPrice}`} />
-              </div>
+              <p className="hint">Deep Dive adds monthly timeline updates, personalized insights and 5 synastry readings a month.</p>
+              <CheckoutButton tier="deep" label={`Deep Dive, ${TIERS.deep.price.replace(" / ", "/")}`} />
             </>
           ) : (
             <>
@@ -97,21 +94,18 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       <div>
         {upgraded && <div className="notice">You're in. Your first timeline arrives within the next three days, on a surprise day.</div>}
         {bought && <div className="notice">Payment received. Your {ONE_TIME[bought as keyof typeof ONE_TIME]?.label.toLowerCase() ?? "reading"} is being written now.</div>}
-        {wantPlan && profile.tier === "free" && (
+        {wantPlan && TIERS[wantPlan].forSale && profile.tier === "free" && (
           <div className="panel">
             <h3>Finish choosing {TIERS[wantPlan].label}</h3>
-            <p>{TIERS[wantPlan].blurb}</p>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <CheckoutButton tier={wantPlan} label={`Pay monthly, ${TIERS[wantPlan].price}`} />
-              <CheckoutButton tier={wantPlan} interval="year" ghost label={`Pay yearly, ${TIERS[wantPlan].yearlyPrice}`} />
-            </div>
+            <OfferSummary offer={offer("deep")} step="Pay securely with Stripe. Cancel any time." />
+            <CheckoutButton tier={wantPlan} label={`Continue to payment, ${TIERS[wantPlan].price.replace(" / ", "/")}`} />
           </div>
         )}
 
         {askShare && <SharePrompt inviter={askShare.inviter} />}
         <h2>Your readings</h2>
         {writingNow && <AutoRefresh seconds={20} />}
-        {bonusUntil && <div className="notice">Your free month of timeline readings runs until {fmt(bonusUntil.toISOString())}. Want it every month? <a href="/dashboard?plan=timeline">Keep my timeline, {TIERS.timeline.price}</a></div>}
+        {bonusUntil && <div className="notice">Your free month of timeline readings runs until {fmt(bonusUntil.toISOString())}. Want it every month? <a href="/dashboard?plan=deep">Get Deep Dive, {TIERS.deep.price.replace(" / ", "/")}</a></div>}
         {writing && <WritingLoader kind={writing.kind} startedAt={writing.created_at} sign={chart.planets[0].sign} art={SIGN_ART[chart.planets[0].sign]} />}
         {onTheWay.length > 0 && (
           <p className="onway">
@@ -139,7 +133,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <section className="panel" style={{ marginTop: 32 }}>
             <h3>{ONE_TIME.yearahead.label}</h3>
             <p className="hint">{ONE_TIME.yearahead.blurb}</p>
-            <BuyButton product="yearahead" label={`Get my year ahead, ${ONE_TIME.yearahead.price}`} />
+            <BuyButton product="yearahead" label={`Get my year ahead, ${ONE_TIME.yearahead.price} once`} />
           </section>
         )}
         <section className="panel">

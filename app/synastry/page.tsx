@@ -66,8 +66,8 @@ export default function TwoOfYou() {
           <div className="w2">{wheel(b, "Theo's chart (fictional)")}</div>
         </div>
         <div className="duo-cta">
-          <Link className="btn brass" href={`/login?next=${encodeURIComponent("/dashboard")}`}>Get my synastry reading, {offer.price}</Link>
-          <p className="hint">One-time. Both charts included, plus a free month of your own timeline. Or get {TIERS.deep.compatPerMonth} a month with <Link href="/#plans">Deep Dive, {TIERS.deep.price}</Link>.</p>
+          <Link className="btn brass" href={`/login?next=${encodeURIComponent("/buy/synastry")}`}>Get my synastry reading, {offer.price} once</Link>
+          <p className="hint">One-time. Both charts included, plus a free month of your own timeline. Or get {TIERS.deep.compatPerMonth} a month with <Link href="/#plans">Deep Dive, {TIERS.deep.price.replace(" / ", "/")}</Link>.</p>
         </div>
       </section>
 
@@ -89,7 +89,7 @@ export default function TwoOfYou() {
           </table>
         </details>
         <div className="duo-cta" style={{ marginTop: 30 }}>
-          <Link className="btn brass" href={`/login?next=${encodeURIComponent("/dashboard")}`}>Get yours, {offer.price}</Link>
+          <Link className="btn brass" href={`/login?next=${encodeURIComponent("/buy/synastry")}`}>Get yours, {offer.price} once</Link>
         </div>
       </section>
       <div className="narrow" style={{ paddingBottom: 40 }}><Invite /></div>

@@ -53,7 +53,8 @@ export async function POST(req: Request) {
   const session = await s.checkout.sessions.create({
     mode: "payment", customer, line_items: [{ price, quantity: 1 }], client_reference_id: user.id,
     metadata, allow_promotion_codes: true,
-    success_url: `${site}/dashboard?bought=${product}`, cancel_url: `${site}/dashboard`,
+    success_url: `${site}/dashboard?bought=${product}`,
+    cancel_url: product === "synastry" || product === "yearahead" ? `${site}/buy/${product}?canceled=1` : `${site}/dashboard`,
   });
   return NextResponse.json({ url: session.url });
 }

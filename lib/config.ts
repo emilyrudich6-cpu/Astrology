@@ -21,6 +21,7 @@ export const TIERS: Record<Tier, {
   stripeLookupKey?: string;       // Stripe price lookup key, monthly
   yearlyPrice?: string;           // shown on the site
   stripeYearlyLookupKey?: string; // Stripe price lookup key, yearly
+  forSale?: boolean;              // offered to new members
 }> = {
   free: {
     label: "Free", price: "$0", blurb: "Your full natal chart deep dive.",
@@ -33,13 +34,15 @@ export const TIERS: Record<Tier, {
     monthlyTimeline: true, questionsPerMonth: 0, savedPeople: 0, compatPerMonth: 0, fullChart: true,
     stripeLookupKey: "timeline_monthly",
     yearlyPrice: "$90 / year (2 months free)", stripeYearlyLookupKey: "timeline_yearly",
+    forSale: false, // existing Timeline members keep their plan; new members choose Deep Dive
   },
   deep: {
-    label: "Deep Dive", price: "$19 / month", blurb: "Monthly updates of your timeline, 2 personalized insights a month, and synastry with anyone you add.",
+    label: "Deep Dive", price: "$9.99 / month", blurb: "Monthly updates of your timeline, 2 personalized insights a month, and synastry with anyone you add.",
     perks: ["Everything in Timeline", "Monthly updates of your timeline", "2 deeper, personalized insights a month", "5 synastry readings a month with anyone you add to Your People", "Extra synastry readings $3.99 each"],
     monthlyTimeline: true, questionsPerMonth: 2, savedPeople: 30, compatPerMonth: 5, fullChart: true,
     stripeLookupKey: "deep_monthly",
-    yearlyPrice: "$190 / year (2 months free)", stripeYearlyLookupKey: "deep_yearly",
+    stripeYearlyLookupKey: "deep_yearly", // not sold now; kept so existing yearly members map to Deep Dive
+    forSale: true,
   },
 };
 
@@ -53,14 +56,14 @@ export const ONE_TIME: Record<OneTimeKey, {
   bonusTimelineDays?: number; // free timeline included with the purchase
 }> = {
   synastry: {
-    enabled: true, label: "Synastry Reading", price: "$19",
+    enabled: true, label: "Compatibility (Synastry) Reading", price: "$11.11",
     blurb: "Your chart next to theirs, both included. Where you two click, where you'll clash, and how to move through it, plus how your timelines line up over the next year. Includes a free month of your personal timeline.",
     stripeLookupKey: "compat_regular",
     bonusTimelineDays: 30,
   },
   question: { enabled: false, label: "Single question", price: "$9", blurb: "Pick one question from the menu and get your answer in minutes.", stripeLookupKey: "one_question" },
   extra: { enabled: true, membersOnly: true, label: "Extra synastry reading", price: "$3.99", blurb: "One more synastry reading this month, beyond the 5 in your plan.", stripeLookupKey: "compat_extra" },
-  yearahead: { enabled: true, label: "Year-ahead timeline", price: "$19", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripeLookupKey: "yearahead" },
+  yearahead: { enabled: true, label: "Year-ahead timeline", price: "$6.66", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripeLookupKey: "yearahead" },
 };
 
 /** Surprise delivery: answers arrive between these many days after asking */

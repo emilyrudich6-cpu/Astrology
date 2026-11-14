@@ -5,10 +5,11 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   // A sign-in link that landed on the wrong page (e.g. the homepage) still finishes signing in
   const { pathname, searchParams } = request.nextUrl;
-  if (pathname !== "/auth/callback" && (searchParams.get("code") || searchParams.get("token_hash"))) {
+  // (the callback falls back to the reading they started, then My readings)
+  if (pathname !== "/auth/callback" && !pathname.startsWith("/api/") &&
+      (searchParams.get("code") || searchParams.get("token_hash") || searchParams.get("error_code"))) {
     const to = request.nextUrl.clone();
     to.pathname = "/auth/callback";
-    if (!to.searchParams.get("next")) to.searchParams.set("next", "/dashboard");
     return NextResponse.redirect(to);
   }
   let response = NextResponse.next({ request });

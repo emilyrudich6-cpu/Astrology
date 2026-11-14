@@ -23,11 +23,14 @@ export async function priceFor(t: Tier, interval: Interval = "month"): Promise<s
   return key ? (await priceIds())[key] : undefined;
 }
 
-/** Which plan a subscription price belongs to (by its lookup key) */
+/** Which plan a subscription price belongs to: by lookup key, or by the price's "tier" metadata.
+ *  The metadata keeps members on older prices (whose lookup key moved to a new price) on their plan. */
 export function tierForPrice(price?: Stripe.Price | null): Tier | null {
   const key = price?.lookup_key;
-  if (!key) return null;
-  return (Object.keys(TIERS) as Tier[]).find(t => TIERS[t].stripeLookupKey === key || TIERS[t].stripeYearlyLookupKey === key) ?? null;
+  const byKey = key ? (Object.keys(TIERS) as Tier[]).find(t => TIERS[t].stripeLookupKey === key || TIERS[t].stripeYearlyLookupKey === key) : undefined;
+  if (byKey) return byKey;
+  const meta = price?.metadata?.tier as Tier | undefined;
+  return meta && meta !== "free" && meta in TIERS ? meta : null;
 }
 
 /** How many of a one-time product have sold (for the founding-price counter) */
