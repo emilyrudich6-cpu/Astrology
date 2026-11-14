@@ -92,21 +92,15 @@ export default async function Result({ searchParams }: { searchParams: Promise<{
         ))}
       </ul>
 
-      {c.houseCusps && (<>
-        <h2 className="sec">Your 12 houses</h2>
-        <p className="hint" style={{ marginTop: -6 }}>Each house is an area of life. The sign on it colors how you approach that area.</p>
-        <ul className="placements houses">
-          {c.houseCusps.map(h => {
-            const inside = c.planets.filter(p => p.house === h.house).map(p => p.name);
-            return (
-              <li key={h.house}>
-                <span><strong>{ord(h.house)} house</strong><span className="theme">{HOUSE_THEMES[h.house][0].toUpperCase() + HOUSE_THEMES[h.house].slice(1)}{inside.length ? `. Holds your ${inside.join(", ")}` : ""}</span></span>
-                <span>{signOf(h.lon)}</span>
-              </li>
-            );
-          })}
-        </ul>
-      </>)}
+      <details className="full house-guide">
+        <summary>What do the twelve houses mean?</summary>
+        <p>In astrology, each house represents a different area of life.</p>
+        <ol className="house-list">
+          {Array.from({ length: 12 }, (_, i) => i + 1).map(n => (
+            <li key={n}><strong>{ord(n)} house</strong><span>{HOUSE_THEMES[n][0].toUpperCase() + HOUSE_THEMES[n].slice(1)}</span></li>
+          ))}
+        </ol>
+      </details>
 
       <details className="full">
         <summary>See the full chart details</summary>

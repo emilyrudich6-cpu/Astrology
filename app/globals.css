@@ -566,3 +566,11 @@ html { scroll-behavior: smooth; }
 .sn-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
 .sn-card-link { color: var(--paper); font-size: .92rem; }
 #log { scroll-margin-top: 80px; }
+
+/* Chart results: the same twelve-house guide for everyone */
+.house-guide { margin-bottom: 0; }
+.house-list { list-style: none; margin: 4px 0 8px; padding: 0; text-align: left; }
+.house-list li { padding: 10px 0; border-bottom: 1px solid var(--line, #3a2a42); }
+.house-list li:last-child { border-bottom: 0; }
+.house-list strong { display: block; color: var(--paper); font-weight: 600; }
+.house-list span { display: block; margin-top: 2px; color: #e1d7e5; font-size: .95rem; }
