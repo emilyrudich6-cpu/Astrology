@@ -52,14 +52,23 @@ export async function currentOffer(k: OneTimeKey) {
 }
 
 /** The account's Stripe customer, created once. The idempotency key stops two at once (sign-up and a quick checkout) making duplicates. */
-export async function ensureCustomer(user: { id: string; email?: string | null }, existing?: string | null): Promise<string> {
-  if (existing) return existing;
+export async function ensureCustomer(user: { id: string; email?: string | null }, existing?: string | null, fresh = false): Promise<string> {
   const db = supabaseAdmin();
-  const { data } = await db.from("profiles").select("stripe_customer_id").eq("id", user.id).maybeSingle();
-  if (data?.stripe_customer_id) return data.stripe_customer_id;
-  const c = await stripe().customers.create({ email: user.email ?? undefined, metadata: { user_id: user.id } }, { idempotencyKey: `customer-${user.id}` });
+  if (!fresh) {
+    if (existing) return existing;
+    const { data } = await db.from("profiles").select("stripe_customer_id").eq("id", user.id).maybeSingle();
+    if (data?.stripe_customer_id) return data.stripe_customer_id;
+  }
+  const c = await stripe().customers.create({ email: user.email ?? undefined, metadata: { user_id: user.id } },
+    { idempotencyKey: `customer-${fresh ? "fresh-" : ""}${user.id}` });
   await db.from("profiles").update({ stripe_customer_id: c.id }).eq("id", user.id);
   return c.id;
+}
+
+/** A customer saved while the site used test keys doesn't exist in live mode (and the reverse) */
+export function isMissingCustomer(e: unknown) {
+  const err = e as { code?: string; param?: string; message?: string };
+  return err?.code === "resource_missing" && (err.param === "customer" || /customer/i.test(err.message ?? ""));
 }
 
 export async function priceIdForLookupKey(key: string) { return (await priceIds())[key]; }

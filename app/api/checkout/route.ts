@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser, supabaseAdmin } from "@/lib/supabase";
-import { stripe, priceFor, ensureCustomer } from "@/lib/stripe";
+import { stripe, priceFor, ensureCustomer, isMissingCustomer } from "@/lib/stripe";
 import { Tier } from "@/lib/config";
 
 export async function POST(req: Request) {
@@ -21,13 +21,18 @@ export async function POST(req: Request) {
     const portal = await s.billingPortal.sessions.create({ customer: p.stripe_customer_id!, return_url: `${site}/dashboard` });
     return NextResponse.json({ url: portal.url });
   }
-  const customer = await ensureCustomer(user, p?.stripe_customer_id);
-  const session = await s.checkout.sessions.create({
+  const open = (customer: string) => s.checkout.sessions.create({
     mode: "subscription", customer, line_items: [{ price, quantity: 1 }],
     client_reference_id: user.id,
     subscription_data: { metadata: { user_id: user.id }, billing_mode: { type: "flexible" } },
     allow_promotion_codes: true,
     success_url: `${site}/dashboard?upgraded=1`, cancel_url: `${site}/dashboard`,
   });
+  let session;
+  try { session = await open(await ensureCustomer(user, p?.stripe_customer_id)); }
+  catch (e) {
+    if (!isMissingCustomer(e)) throw e;
+    session = await open(await ensureCustomer(user, null, true)); // saved under the other mode (test vs live): start a new one
+  }
   return NextResponse.json({ url: session.url });
 }

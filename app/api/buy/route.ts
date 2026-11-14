@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser, supabaseAdmin } from "@/lib/supabase";
-import { stripe, currentOffer, priceIdForLookupKey, ensureCustomer } from "@/lib/stripe";
+import { stripe, currentOffer, priceIdForLookupKey, ensureCustomer, isMissingCustomer } from "@/lib/stripe";
 import { ONE_TIME, OneTimeKey, QUESTION_MENU } from "@/lib/config";
 import { parseBirth } from "@/lib/validate";
 
@@ -47,13 +47,18 @@ export async function POST(req: Request) {
   }
 
   const s = stripe();
-  const customer = await customerP;
   const site = process.env.NEXT_PUBLIC_SITE_URL!;
-  const session = await s.checkout.sessions.create({
+  const open = (customer: string) => s.checkout.sessions.create({
     mode: "payment", customer, line_items: [{ price, quantity: 1 }], client_reference_id: user.id,
     metadata, allow_promotion_codes: true,
     success_url: `${site}/dashboard?bought=${product}`,
     cancel_url: product === "synastry" || product === "yearahead" ? `${site}/buy/${product}?canceled=1` : `${site}/dashboard`,
   });
+  let session;
+  try { session = await open(await customerP); }
+  catch (e) {
+    if (!isMissingCustomer(e)) throw e;
+    session = await open(await ensureCustomer(user, null, true)); // saved under the other mode (test vs live): start a new one
+  }
   return NextResponse.json({ url: session.url });
 }
