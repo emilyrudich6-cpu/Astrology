@@ -162,7 +162,7 @@ export default function FullChartView({ doc }: { doc: FullChartDoc }) {
       )}
 
       <Section title="Bonus: Numerology">
-        <p><strong>Life Path {c.numerology.lifePath.number}</strong> ({c.numerology.lifePath.working}). Personal Years: {c.numerology.personalYears.map(y => `${y.year} is a ${y.number}`).join(", ")}.</p>
+        <p><strong>Life Path {c.numerology.lifePath.display ?? c.numerology.lifePath.number}</strong> ({c.numerology.lifePath.working}). Personal Years: {c.numerology.personalYears.map(y => `${y.year} is a ${y.number}`).join(", ")}.</p>
         <Rich text={t.numerology} />
       </Section>
 

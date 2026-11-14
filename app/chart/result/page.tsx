@@ -8,6 +8,7 @@ import { chartSignature, PLANET_TAKEAWAY } from "@/lib/engine/dominant";
 import { HOUSE_THEMES } from "@/lib/engine/transits";
 import { signByName } from "@/lib/signs";
 import NewsletterSignup from "@/components/NewsletterSignup";
+import Numerology from "@/components/Numerology";
 
 export const metadata: Metadata = { title: "Your chart · Vertex Point", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -74,6 +75,8 @@ export default async function Result({ searchParams }: { searchParams: Promise<{
       <p className="other-signs no-print"><span className="hint">Find your other signs:</span>{" "}
         {bigThreeLinks.map((x, i) => <span key={x.lab}>{i > 0 && ", "}<Link href={`/signs/${signByName(x.sign)!.slug}${x.tab}`}>{x.sign} {x.lab}</Link></span>)}
       </p>
+
+      <Numerology birthDate={b.date} serverYear={new Date().getUTCFullYear()} />
 
       <h2 className="sec">Your placements</h2>
       <ul className="placements">

@@ -6,6 +6,7 @@ import {
   PLANETS, Planet, lonOf, speedOf, norm360, wrap180, angDist, fmtDeg, signOf, houseOf, SIGNS, trueNode,
 } from "./core";
 import { NatalChart, round } from "./natal";
+import { lifePath, birthdayNumber, personalYear } from "../numerology";
 import { natalTargets, HOUSE_THEMES } from "./transits";
 
 const DAY = 86400000;
@@ -399,18 +400,13 @@ export function humanDesign(c: NatalChart) {
 }
 
 // ---------------- Numerology ----------------
-function reduce(n: number): number {
-  while (n > 9 && n !== 11 && n !== 22 && n !== 33) n = String(n).split("").reduce((s, d) => s + Number(d), 0);
-  return n;
-}
-const digitSum = (s: string) => s.replace(/\D/g, "").split("").reduce((a, d) => a + Number(d), 0);
-
+// Same conventions as the free results (see lib/numerology.ts)
 export function numerology(birthDateStr: string, years: number[]) {
-  const total = digitSum(birthDateStr);
-  const [, m, d] = birthDateStr.split("-");
+  const lp = lifePath(birthDateStr);
   return {
-    lifePath: { number: reduce(total), working: `${birthDateStr.replace(/\D/g, "").split("").join("+")} = ${total}${reduce(total) !== total ? ` → ${reduce(total)}` : ""}` },
-    personalYears: years.map(y => ({ year: y, number: reduce(digitSum(m) + digitSum(d) + digitSum(String(y))) })),
+    lifePath: { number: lp.value, display: lp.display, working: lp.working },
+    birthday: birthdayNumber(birthDateStr).display,
+    personalYears: years.map(y => ({ year: y, number: personalYear(birthDateStr, y).value })),
   };
 }
 

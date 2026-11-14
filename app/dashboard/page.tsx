@@ -11,6 +11,7 @@ import { currentOffer } from "@/lib/stripe";
 import AutoRefresh from "@/components/AutoRefresh";
 import StartFullChart from "@/components/StartFullChart";
 import WritingLoader from "@/components/WritingLoader";
+import Numerology from "@/components/Numerology";
 import { SIGN_ART } from "@/lib/sign-art";
 import { currentUser, supabaseAdmin, isAdmin } from "@/lib/supabase";
 import { natalChart } from "@/lib/engine/natal";
@@ -57,6 +58,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <h3>{profile.name}</h3>
           <p style={{ margin: 0 }}>☉ {chart.bigThree.sun}<br />☽ {chart.bigThree.moon}<br />AC {chart.bigThree.ascendant}</p>
           <p className="hint" style={{ marginTop: 10 }}>{profile.birth_place} · <Link href="/onboarding">Edit birth details</Link></p>
+        </div>
+        <div className="panel">
+          <Numerology birthDate={profile.birth_date} serverYear={new Date().getUTCFullYear()} compact />
         </div>
         <div className="panel">
           <h3>Your plan: {tier.label}</h3>
