@@ -3,7 +3,7 @@
 // After sign-up we wait for the confirmation email. On iPhone, Gmail opens that link in its own browser,
 // which confirms the email but can't sign this tab in, so this tab quietly checks and carries on by itself.
 import { useCallback, useEffect, useRef, useState } from "react";
-import { supabaseBrowser } from "@/lib/supabase-browser";
+import { supabaseBrowser, supabaseResetRequest } from "@/lib/supabase-browser";
 
 type Mode = "signup" | "signin" | "forgot" | "confirm" | "resetSent" | "resend" | "resent";
 type Link = "confirmed" | "expired" | "invalid" | "reset";
@@ -90,7 +90,8 @@ export default function LoginForm({ next, initial = "signup", link, signedInAs =
       }
       finish(data.user?.user_metadata);
     } else if (mode === "forgot") {
-      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: callback("/reset-password") });
+      // The link opens /reset-password directly, in whatever browser the email is opened in
+      const { error } = await supabaseResetRequest().auth.resetPasswordForEmail(email, { redirectTo: `${location.origin}/reset-password` });
       setBusy(false);
       if (error) setErr(/rate|many/i.test(error.message) ? "Too many emails just now. Wait a few minutes and try again." : error.message);
       else setMode("resetSent");
@@ -124,7 +125,7 @@ export default function LoginForm({ next, initial = "signup", link, signedInAs =
   if (mode === "resetSent") return (
     <div className="auth-done">
       <h2>Check your inbox</h2>
-      <p>We sent a link to <strong>{email}</strong> to set a new password. Open it on this same phone or computer.</p>
+      <p>We sent a link to <strong>{email}</strong> to set a new password. It works once, for about an hour.</p>
       <button type="button" className="linklike" onClick={() => go("signin")}>Back to sign in</button>
     </div>
   );
@@ -148,7 +149,7 @@ export default function LoginForm({ next, initial = "signup", link, signedInAs =
         </div>
       )}
       <form onSubmit={submit}>
-        {mode === "forgot" && link === "reset" && <p className="notice" role="status">Reset links only work in the browser where you asked for them. Send a new one, then open it on this same phone or computer.</p>}
+        {mode === "forgot" && link === "reset" && <p className="notice" role="status">That reset link has expired or was already used. Enter your email and we'll send a new one.</p>}
         {mode === "forgot" && <p className="hint">Enter your email and we'll send you a link to set a new password.</p>}
         <div className="field"><label htmlFor="email">Email</label>
           <input id="email" type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} /></div>

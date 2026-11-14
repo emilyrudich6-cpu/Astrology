@@ -6,7 +6,7 @@ export default function AuthHashHandler() {
   useEffect(() => {
     const h = new URLSearchParams(location.hash.slice(1));
     const code = h.get("error_code") ?? h.get("error");
-    if (!code || new URLSearchParams(location.search).get("link")) return;
+    if (!code || new URLSearchParams(location.search).get("link") || location.pathname === "/reset-password") return; // the reset page explains its own link errors
     const expired = /expired/i.test(code + (h.get("error_description") ?? ""));
     location.replace(`/login?mode=signin&link=${expired ? "expired" : "invalid"}`);
   }, []);

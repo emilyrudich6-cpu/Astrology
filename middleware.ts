@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
   // A sign-in link that landed on the wrong page (e.g. the homepage) still finishes signing in
   const { pathname, searchParams } = request.nextUrl;
   // (the callback falls back to the reading they started, then My readings)
-  if (pathname !== "/auth/callback" && !pathname.startsWith("/api/") &&
+  if (pathname !== "/auth/callback" && pathname !== "/reset-password" && !pathname.startsWith("/api/") &&
       (searchParams.get("code") || searchParams.get("token_hash") || searchParams.get("error_code"))) {
     const to = request.nextUrl.clone();
     to.pathname = "/auth/callback";
