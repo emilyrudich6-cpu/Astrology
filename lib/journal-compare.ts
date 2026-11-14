@@ -49,7 +49,7 @@ export interface TransitOnDay {
 }
 export interface Comparison {
   meaning: NumberMeaning | null; numberQuestion: string; themes: { key: string; label: string }[];
-  transits: TransitOnDay[]; overlap: { theme: string; planet: string } | null; question: string; chartMissing: boolean;
+  transits: TransitOnDay[]; overlap: { theme: string; planet: string; transit: string } | null; question: string; chartMissing: boolean;
 }
 
 const fmt = (iso: string) => new Date(iso.slice(0, 10) + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
@@ -90,8 +90,10 @@ export function compareEntry(entry: { number_norm: string; note: string | null; 
   if (birth) { try { transits = transitsOn(natalChart(birth), new Date(entry.seen_at), themes); } catch { chartMissing = true; } }
   else chartMissing = true;
   const hit = transits.find(t => t.overlaps.length);
-  const overlap = hit ? { theme: hit.overlaps[0], planet: hit.transiting } : null;
+  const overlap = hit ? { theme: hit.overlaps[0], planet: hit.transiting, transit: hit.label } : null;
+  // The question comes from the member's own note first, then the sky, then the number
   const question = overlap ? THEMES.find(t => t.key === overlap.theme)!.question
+    : themes[0] ? themes[0].question
     : transits[0] ? PLANET_QUESTION[transits[0].transiting] ?? GENERAL_QUESTION
     : meaning?.question ?? GENERAL_QUESTION;
   return {
