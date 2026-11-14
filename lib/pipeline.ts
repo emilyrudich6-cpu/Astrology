@@ -9,7 +9,7 @@ import { firstTimelineTime, nextMonthlyTimelineTime } from "./schedule";
 import { TIERS, Tier } from "./config";
 
 const PREGENERATE_HOURS = 12;   // write readings this far ahead of delivery
-const STUCK_MINUTES = 15;
+export const STUCK_MINUTES = 15;
 const MAX_ATTEMPTS = 3;
 
 export function birthFromRow(r: any): BirthData {
@@ -57,6 +57,18 @@ export async function generateReading(id: string) {
     await db.from("readings").update({ status: failed ? "failed" : "scheduled", error: String(e?.message ?? e).slice(0, 500) }).eq("id", id);
     console.error("reading failed", id, e);
   }
+}
+
+/** Write these readings right now, side by side, then release them. One immediate second try each,
+ *  so a single hiccup doesn't leave a paid reading waiting for the 15-minute scheduler. */
+export async function writeNow(ids: string[]) {
+  const db = supabaseAdmin();
+  await Promise.all(ids.map(async id => {
+    await generateReading(id);
+    const { data } = await db.from("readings").select("status").eq("id", id).maybeSingle();
+    if (data?.status === "scheduled") await generateReading(id);
+  }));
+  await deliverDue();
 }
 
 /** Release every finished reading whose moment has come */

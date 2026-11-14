@@ -3,7 +3,7 @@ import { after } from "next/server";
 import { supabaseAdmin } from "./supabase";
 import { TIERS, Tier } from "./config";
 import { planUsedThisMonth } from "./quota";
-import { generateReading, deliverDue } from "./pipeline";
+import { writeNow } from "./pipeline";
 
 export type CompatResult = { ok: true; started: true } | { ok: true; needsExtra: true; personId: string } | { ok: false; error: string; status: number };
 
@@ -21,7 +21,7 @@ export async function startIncludedReading(userId: string, personId: string): Pr
     user_id: userId, kind: "synastry", person_id: person.id, title: `You & ${person.name}`, deliver_at: new Date().toISOString(),
   }).select("id").single();
   if (!r) return { ok: false, error: "Couldn't start the reading. Try again.", status: 500 };
-  after(async () => { await generateReading(r.id); await deliverDue(); });
+  after(() => writeNow([r.id]));
   return { ok: true, started: true };
 }
 
@@ -37,6 +37,6 @@ export async function ensureFullChart(userId: string, opts: { force?: boolean } 
     user_id: userId, kind: "fullchart", title: "Your Full Chart", deliver_at: new Date().toISOString(),
   }).select("id").single();
   if (!r) return { ok: false as const, error: "Couldn't start it. Try again.", status: 500 };
-  after(async () => { await generateReading(r.id); await deliverDue(); });
+  after(() => writeNow([r.id]));
   return { ok: true as const, started: true };
 }

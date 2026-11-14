@@ -51,7 +51,7 @@ export async function POST(req: Request) {
   const open = (customer: string) => s.checkout.sessions.create({
     mode: "payment", customer, line_items: [{ price, quantity: 1 }], client_reference_id: user.id,
     metadata, allow_promotion_codes: true,
-    success_url: `${site}/dashboard?bought=${product}`,
+    success_url: `${site}/api/checkout/return?product=${product}&session_id={CHECKOUT_SESSION_ID}`, // Stripe fills in the session id
     cancel_url: product === "synastry" || product === "yearahead" ? `${site}/buy/${product}?canceled=1` : `${site}/dashboard`,
   });
   let session;

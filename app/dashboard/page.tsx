@@ -11,6 +11,7 @@ import { currentOffer } from "@/lib/stripe";
 import AutoRefresh from "@/components/AutoRefresh";
 import StartFullChart from "@/components/StartFullChart";
 import WritingLoader from "@/components/WritingLoader";
+import { readingCards, cardState, KIND_NAME } from "@/lib/reading-status";
 import Numerology from "@/components/Numerology";
 import SeeingNumbersCard from "@/components/SeeingNumbersCard";
 import { mostLogged } from "@/lib/seeing-numbers";
@@ -29,8 +30,8 @@ import { TIERS, Tier, QUESTION_MENU, ONE_TIME } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
-export default async function Dashboard({ searchParams }: { searchParams: Promise<{ plan?: string; upgraded?: string; bought?: string }> }) {
-  const { plan, upgraded, bought } = await searchParams;
+export default async function Dashboard({ searchParams }: { searchParams: Promise<{ plan?: string; upgraded?: string; bought?: string; session_id?: string }> }) {
+  const { plan, upgraded, bought, session_id } = await searchParams;
   const user = await currentUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(`/dashboard${plan ? `?plan=${plan}` : ""}`)}`);
   const db = supabaseAdmin();
@@ -38,13 +39,28 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   if (!profile?.birth_date) redirect("/onboarding");
 
   const tier = TIERS[profile.tier as Tier];
-  const { data: readings } = await db.from("readings").select("id,kind,title,status,deliver_at,delivered_at,read_at,created_at")
+  // Back from Stripe Checkout (/api/checkout/return has already confirmed the payment): find this purchase's own reading
+  let boughtReadingId: string | null = null;
+  if (bought) {
+    const q = db.from("purchases").select("reading_id").eq("user_id", user.id);
+    const { data: pu } = session_id ? await q.eq("stripe_session_id", session_id).maybeSingle()
+      : await q.eq("product", bought).order("created_at", { ascending: false }).limit(1).maybeSingle();
+    boughtReadingId = pu?.reading_id ?? null;
+  }
+  const { data: readings } = await db.from("readings").select("id,kind,title,status,attempts,person_id,deliver_at,delivered_at,read_at,created_at,claimed_at")
     .eq("user_id", user.id).order("created_at", { ascending: false }).limit(100);
   const delivered = (readings ?? []).filter(r => r.delivered_at).sort((a, b) => b.delivered_at!.localeCompare(a.delivered_at!));
   const onTheWay = (readings ?? []).filter(r => !r.delivered_at && r.status !== "failed");
   const natalPending = onTheWay.some(r => r.kind === "natal");
-  const writing = onTheWay.find(r => new Date(r.deliver_at) <= new Date()); // free chart or a paid one-off being written
-  const writingNow = !!writing;
+  // Each reading being written (or that failed) gets its own card with its own status
+  const cards = readingCards(readings ?? []);
+  const active = cards.some(c => c.state !== "failed");
+  const personIds = [...new Set(cards.map(c => c.personId).filter(Boolean))] as string[];
+  const { data: cardPeople } = personIds.length ? await db.from("people").select("id,name").in("id", personIds) : { data: [] as { id: string; name: string }[] };
+  const whoOf = (pid: string | null) => cardPeople?.find(p => p.id === pid)?.name ?? null;
+  const boughtRow = boughtReadingId ? (readings ?? []).find(r => r.id === boughtReadingId) ?? null : null;
+  const boughtState = boughtRow ? cardState(boughtRow) : null;
+  const boughtName = bought ? (bought === "synastry" || bought === "extra" ? KIND_NAME.synastry : ONE_TIME[bought as keyof typeof ONE_TIME]?.label ?? "reading") : "";
   const compat = await currentOffer("synastry");
   const bonusUntil = profile.tier === "free" && profile.bonus_timeline_until && new Date(profile.bonus_timeline_until) > new Date()
     ? new Date(profile.bonus_timeline_until) : null;
@@ -58,7 +74,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const invite = FEATURES.referrals ? { code: await getInviteCode(user.id), state: await inviteStatus(user.id) } : null;
   const wantPlan = plan === "timeline" || plan === "deep" ? plan : null;
   const fmt = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: profile.timezone });
-  const kindLabel: Record<string, string> = { natal: "your free chart", timeline: "your monthly timeline", question: "an answer to your question", synastry: "a synastry reading", yearahead: "your year-ahead timeline", fullchart: "your Full Chart" };
+  const kindLabel: Record<string, string> = { natal: "your free chart", timeline: "your monthly timeline", question: "an answer to your question", synastry: "your Compatibility Reading", yearahead: "your year-ahead timeline", fullchart: "your Full Chart" };
   const hasFullChart = (readings ?? []).some(r => r.kind === "fullchart" && r.status !== "failed");
 
   return (
@@ -99,7 +115,14 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
       <div>
         {upgraded && <div className="notice">You're in. Your first timeline arrives within the next three days, on a surprise day.</div>}
-        {bought && <div className="notice">Payment received. Your {ONE_TIME[bought as keyof typeof ONE_TIME]?.label.toLowerCase() ?? "reading"} is being written now.</div>}
+        {bought && (
+          <div className="notice" role="status">
+            {boughtRow?.delivered_at ? <>Your {boughtName} is ready. <Link href={`/reading/${boughtRow.id}`}>Open {boughtRow.title ?? "it"}</Link></>
+              : boughtState === "failed" || boughtState === "stalled" ? <>Payment received, but your {boughtName} hit a problem while being written. Use Try again below: you won't be charged again.</>
+              : boughtRow ? <>Payment received. Your {boughtName}{whoOf(boughtRow.person_id) ? ` for you and ${whoOf(boughtRow.person_id)}` : ""} is being written now.</>
+              : <>Payment received. We're confirming it with Stripe, and your {boughtName} will start in a moment.</>}
+          </div>
+        )}
         {wantPlan && TIERS[wantPlan].forSale && profile.tier === "free" && (
           <div className="panel">
             <h3>Finish choosing {TIERS[wantPlan].label}</h3>
@@ -110,13 +133,16 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
         {askShare && <SharePrompt inviter={askShare.inviter} />}
         <h2>Your readings</h2>
-        {writingNow && <AutoRefresh seconds={20} />}
+        {(active || (bought && !boughtRow)) && <AutoRefresh seconds={8} />}
         {bonusUntil && <div className="notice">Your free month of timeline readings runs until {fmt(bonusUntil.toISOString())}. Want it every month? <a href="/dashboard?plan=deep">Get Deep Dive, {TIERS.deep.price.replace(" / ", "/")}</a></div>}
-        {writing && <WritingLoader kind={writing.kind} startedAt={writing.created_at} sign={chart.planets[0].sign} art={SIGN_ART[chart.planets[0].sign]} />}
+        {cards.map(c => (
+          <WritingLoader key={c.id} id={c.id} kind={c.kind} state={c.state} since={c.since} who={whoOf(c.personId)}
+            sign={chart.planets[0].sign} art={SIGN_ART[chart.planets[0].sign]} />
+        ))}
         {onTheWay.length > 0 && (
           <p className="onway">
             On the way: {onTheWay.map(r => kindLabel[r.kind]).join(", ")}.{" "}
-            {writingNow ? "This page refreshes on its own." : "Each arrives on a surprise day."}
+            {active ? "This page refreshes on its own." : "Each arrives on a surprise day."}
           </p>
         )}
         {delivered.length === 0 && !natalPending && <p className="onway">Nothing here yet.</p>}

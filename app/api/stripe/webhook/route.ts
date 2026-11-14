@@ -3,8 +3,8 @@ import Stripe from "stripe";
 import { stripe, tierForPrice } from "@/lib/stripe";
 import { ensureFullChart } from "@/lib/compat";
 import { supabaseAdmin } from "@/lib/supabase";
-import { ONE_TIME, OneTimeKey } from "@/lib/config";
-import { generateReading, deliverDue } from "@/lib/pipeline";
+import { fulfilOneTime } from "@/lib/fulfil";
+import { writeNow } from "@/lib/pipeline";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -36,7 +36,11 @@ export async function POST(req: Request) {
     case "checkout.session.completed": {
       const s = event.data.object as Stripe.Checkout.Session;
       if (s.subscription) await sync(await stripe().subscriptions.retrieve(String(s.subscription)));
-      if (s.mode === "payment" && s.payment_status === "paid") await fulfilOneTime(s);
+      if (s.mode === "payment" && s.payment_status === "paid") {
+        // Safe if Stripe sends the event twice, or the buyer's return to the site got there first
+        const { toWrite } = await fulfilOneTime(s);
+        if (toWrite.length) after(() => writeNow(toWrite));
+      }
       break;
     }
     case "customer.subscription.created":
@@ -46,38 +50,4 @@ export async function POST(req: Request) {
       break;
   }
   return NextResponse.json({ received: true });
-}
-
-/** Writes the reading a one-time purchase paid for, right away. Safe if Stripe sends the event twice. */
-async function fulfilOneTime(s: Stripe.Checkout.Session) {
-  const db = supabaseAdmin();
-  const m = s.metadata ?? {};
-  if (!m.user_id || !m.product) return;
-  const { error: dup } = await db.from("purchases").insert({ user_id: m.user_id, product: m.product, stripe_session_id: s.id, amount_cents: s.amount_total });
-  if (dup) return; // already fulfilled (unique session id)
-  const now = new Date().toISOString();
-  const base = { user_id: m.user_id, deliver_at: now, paid: true };
-  const row =
-    m.product === "question" ? { ...base, kind: "question", category: m.category, question: m.question, title: m.question }
-    : m.product === "synastry" ? { ...base, kind: "synastry", person_id: m.person_id, title: "Your synastry reading" }
-    : m.product === "extra" ? { ...base, kind: "synastry", person_id: m.person_id, title: "You & " + ((await db.from("people").select("name").eq("id", m.person_id).maybeSingle()).data?.name ?? "them") }
-    : m.product === "yearahead" ? { ...base, kind: "yearahead", title: "Your year ahead" }
-    : null;
-  if (!row) return;
-  const ids: string[] = [];
-  const { data: r } = await db.from("readings").insert(row).select("id").single();
-  if (r) { ids.push(r.id); await db.from("purchases").update({ reading_id: r.id }).eq("stripe_session_id", s.id); }
-
-  // Bonus: a free month of the personal timeline (no card charged later; they're invited to subscribe when it ends)
-  const bonusDays = ONE_TIME[m.product as OneTimeKey]?.bonusTimelineDays;
-  if (bonusDays) {
-    const { data: p } = await db.from("profiles").select("tier,bonus_timeline_until").eq("id", m.user_id).single();
-    const alreadyHadBonus = !!p?.bonus_timeline_until;
-    if (p?.tier === "free" && !alreadyHadBonus) {
-      await db.from("profiles").update({ bonus_timeline_until: new Date(Date.now() + bonusDays * 86400000).toISOString() }).eq("id", m.user_id);
-      const { data: t } = await db.from("readings").insert({ ...base, kind: "timeline", title: "Your free month: personal timeline" }).select("id").single();
-      if (t) ids.push(t.id);
-    }
-  }
-  after(async () => { for (const id of ids) await generateReading(id); await deliverDue(); });
 }

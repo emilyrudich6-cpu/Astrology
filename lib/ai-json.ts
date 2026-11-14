@@ -17,15 +17,30 @@ export async function writeJSON<T>(system: string, task: string, data: unknown, 
   dryHints: Record<string, string[]> = {}): Promise<T> {
   if (process.env.READINGS_DRY_RUN) return placeholder(schema, dryHints) as T;
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const msg = await client.messages.create({
+  // Current models reject a forced tool call ("tool_choice: tool is not supported for this model"), which made
+  // every Full Chart and synastry reading fail. We let the model choose, tell it plainly to call the tool, and
+  // ask it to skip hidden up-front thinking (it counts against max_tokens and adds minutes).
+  const base = {
     model: ANTHROPIC_MODEL,
-    max_tokens: maxTokens,
-    system,
+    system: `${system}\n\nReturn the reading only by calling the write_reading tool, once, with every field filled in. Do not reply in plain text.`,
     tools: [{ name: "write_reading", description: "Return the written sections of the reading.", input_schema: schema as any }],
-    tool_choice: { type: "tool", name: "write_reading" },
-    messages: [{ role: "user", content: `${task}\n\nCHART DATA (JSON):\n${JSON.stringify(data)}` }],
-  });
-  const block = msg.content.find(b => b.type === "tool_use") as any;
+    tool_choice: { type: "auto" as const },
+    messages: [{ role: "user" as const, content: `${task}\n\nCHART DATA (JSON):\n${JSON.stringify(data)}` }],
+  };
+  const ask = async (extra: string) => {
+    const messages = extra ? [...base.messages, { role: "user" as const, content: extra }] : base.messages;
+    try {
+      return await client.messages.create({ ...base, messages, max_tokens: maxTokens, thinking: { type: "between_tools" } });
+    } catch (e) {
+      if ((e as { status?: number })?.status !== 400) throw e;
+      return await client.messages.create({ ...base, messages, max_tokens: maxTokens + 6000 }); // a model without that setting
+    }
+  };
+  const pick = (m: Anthropic.Message) => m.content.find(b => b.type === "tool_use") as any;
+  let msg = await ask("");
+  // Free to choose, the model can answer in prose instead. Ask once more before giving up.
+  if (!pick(msg)) msg = await ask("Call the write_reading tool now with the complete reading.");
+  const block = pick(msg);
   if (!block?.input || typeof block.input !== "object" || !Object.keys(block.input).length)
     throw new Error(`empty reply (stop_reason: ${msg.stop_reason})`);
   if (msg.stop_reason === "max_tokens") throw new Error("reply was cut off (max_tokens)");

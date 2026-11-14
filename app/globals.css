@@ -574,3 +574,9 @@ html { scroll-behavior: smooth; }
 .house-list li:last-child { border-bottom: 0; }
 .house-list strong { display: block; color: var(--paper); font-weight: 600; }
 .house-list span { display: block; margin-top: 2px; color: #e1d7e5; font-size: .95rem; }
+
+/* A reading that failed or stalled: same card, no animation, a clear retry */
+.writing.problem { padding: 22px 20px; border-color: #6b4a55; }
+.writing.problem h3 { margin-top: 0; }
+.writing.problem .btn, .writing .btn { margin-top: 10px; }
+.writing + .writing { margin-top: -8px; }
