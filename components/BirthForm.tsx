@@ -38,10 +38,10 @@ export default function BirthForm({ endpoint, submitLabel, withRelationship = fa
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ ...extra, name, relationship, birth_date: date, birth_time: noTime ? null : time || null, birth_place: place.label, latitude: place.latitude, longitude: place.longitude, timezone: place.timezone }),
     });
-    setBusy(false);
     const j = await r.json().catch(() => ({}));
-    if (!r.ok) { setErr(j.error ?? "Something went wrong. Try again."); return; }
-    if (j.url) { location.href = j.url; return; }
+    if (!r.ok) { setBusy(false); setErr(j.error ?? "Something went wrong. Try again."); return; }
+    if (j.url) { location.href = j.url; return; } // stays "Opening secure checkout…" until Stripe's page loads
+    setBusy(false);
     if (onDone) onDone(); else if (j.redirect) location.href = j.redirect;
   }
 
@@ -76,7 +76,7 @@ export default function BirthForm({ endpoint, submitLabel, withRelationship = fa
         {place && <p className="hint">Time zone: {place.timezone}. Daylight saving at the time of birth is handled automatically.</p>}
       </div>
       {err && <p className="error" role="alert">{err}</p>}
-      <button className="btn" disabled={busy}>{busy ? "Saving…" : submitLabel}</button>
+      <button className="btn" disabled={busy}>{busy ? (endpoint === "/api/buy" ? "Opening secure checkout…" : "Saving…") : submitLabel}</button>
     </form>
   );
 }

@@ -13,6 +13,7 @@ import StartFullChart from "@/components/StartFullChart";
 import WritingLoader from "@/components/WritingLoader";
 import Numerology from "@/components/Numerology";
 import OfferSummary from "@/components/OfferSummary";
+import StripePreconnect from "@/components/StripePreconnect";
 import { offer } from "@/lib/offers";
 import InviteCard from "@/components/InviteCard";
 import SharePrompt from "@/components/SharePrompt";
@@ -59,6 +60,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
   return (
     <div className="wrap dash">
+      <StripePreconnect />
       <aside>
         <ChartWheel label={`${profile.name}'s natal chart`} planets={chart.planets}
           cusps={chart.houseCusps?.map(h => h.lon)} asc={chart.angles?.[0].lon ?? null} aspects={chart.aspects} />

@@ -17,10 +17,10 @@ export default function AskQuestion({ menu, remaining, perMonth, buyPrice }: { m
 
   async function buy() {
     setBusy(true); setMsg("");
-    const r = await fetch("/api/buy", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ product: "question", category: cat, question: q }) });
-    const j = await r.json().catch(() => ({}));
-    setBusy(false);
-    if (j.url) location.href = j.url; else setMsg(j.error ?? "Couldn't open checkout. Try again.");
+    const r = await fetch("/api/buy", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ product: "question", category: cat, question: q }) }).catch(() => null);
+    const j = r ? await r.json().catch(() => ({})) : {};
+    if (j.url) { location.href = j.url; return; } // keep "Opening secure checkout…" until Stripe loads
+    setBusy(false); setMsg(j.error ?? "Couldn't open checkout. Try again.");
   }
 
   async function ask() {
@@ -51,7 +51,7 @@ export default function AskQuestion({ menu, remaining, perMonth, buyPrice }: { m
         </div>
       )}
       {q && !buying && <button className="btn" disabled={busy} onClick={ask}>{busy ? "Sending…" : "Get this insight"}</button>}
-      {q && buying && <button className="btn" disabled={busy} onClick={buy}>{busy ? "Opening checkout…" : `Buy this answer, ${buyPrice}`}</button>}
+      {q && buying && <button className="btn" disabled={busy} onClick={buy}>{busy ? "Opening secure checkout…" : `Buy this answer, ${buyPrice}`}</button>}
       {msg && <p className="hint" role="status" style={{ marginTop: 12 }}>{msg}</p>}
     </div>
   );

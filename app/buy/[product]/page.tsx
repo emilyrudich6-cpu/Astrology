@@ -5,6 +5,7 @@ import { currentUser, supabaseAdmin } from "@/lib/supabase";
 import { offer, availability, OfferKey } from "@/lib/offers";
 import { TIERS } from "@/lib/config";
 import OfferSummary from "@/components/OfferSummary";
+import StripePreconnect from "@/components/StripePreconnect";
 import BirthForm from "@/components/BirthForm";
 import { BuyButton } from "@/components/BillingButtons";
 
@@ -25,6 +26,7 @@ export default async function Buy({ params, searchParams }: { params: Promise<{ 
   const canceled = (await searchParams).canceled;
   return (
     <section className="narrow" style={{ padding: "36px 22px 90px", maxWidth: 560 }}>
+      <StripePreconnect />
       <h1 style={{ fontSize: "var(--step-3)" }}>{o.label}</h1>
       <OfferSummary offer={o} step={product === "synastry" ? "Add their birth details, then pay securely with Stripe." : "Pay securely with Stripe, and it's written for you right away."} />
       {canceled && <div className="notice">Checkout was canceled, so you haven't been charged. You can try again below.</div>}

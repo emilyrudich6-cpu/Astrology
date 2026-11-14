@@ -3,6 +3,7 @@ import { currentUser, supabaseAdmin } from "@/lib/supabase";
 import { parseBirth } from "@/lib/validate";
 import { generateReading, deliverDue } from "@/lib/pipeline";
 import { attachReferral, qualifyReferral } from "@/lib/referrals";
+import { ensureCustomer } from "@/lib/stripe";
 
 export const maxDuration = 300;
 
@@ -26,5 +27,6 @@ export async function POST(req: Request) {
     // First free chart: if this account came from an invite, the inviter earns their free synastry reading
     await qualifyReferral(user).catch(() => {});
   }
+  if (process.env.STRIPE_SECRET_KEY) after(() => ensureCustomer(user).then(() => {}, () => {}));
   return NextResponse.json({ ok: true, redirect: next });
 }

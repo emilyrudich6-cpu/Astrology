@@ -51,4 +51,15 @@ export async function currentOffer(k: OneTimeKey) {
   return { lookupKey: item.stripeLookupKey, price: item.price, regular: item.price, foundingLeft: 0 };
 }
 
+/** The account's Stripe customer, created once. The idempotency key stops two at once (sign-up and a quick checkout) making duplicates. */
+export async function ensureCustomer(user: { id: string; email?: string | null }, existing?: string | null): Promise<string> {
+  if (existing) return existing;
+  const db = supabaseAdmin();
+  const { data } = await db.from("profiles").select("stripe_customer_id").eq("id", user.id).maybeSingle();
+  if (data?.stripe_customer_id) return data.stripe_customer_id;
+  const c = await stripe().customers.create({ email: user.email ?? undefined, metadata: { user_id: user.id } }, { idempotencyKey: `customer-${user.id}` });
+  await db.from("profiles").update({ stripe_customer_id: c.id }).eq("id", user.id);
+  return c.id;
+}
+
 export async function priceIdForLookupKey(key: string) { return (await priceIds())[key]; }

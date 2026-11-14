@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { currentUser, supabaseAdmin } from "@/lib/supabase";
-import { stripe, currentOffer, priceIdForLookupKey } from "@/lib/stripe";
+import { stripe, currentOffer, priceIdForLookupKey, ensureCustomer } from "@/lib/stripe";
 import { ONE_TIME, OneTimeKey, QUESTION_MENU } from "@/lib/config";
 import { parseBirth } from "@/lib/validate";
 
@@ -8,17 +8,17 @@ const RELATIONSHIPS = ["partner", "crush", "ex", "friend", "family", "business p
 
 /** Starts a one-time Stripe checkout. The Stripe webhook writes the reading once payment succeeds. */
 export async function POST(req: Request) {
-  const user = await currentUser();
+  // Everything before checkout runs side by side, so the button opens Stripe as fast as possible
+  const [user, body] = await Promise.all([currentUser(), req.json().catch(() => ({}))]);
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });
-  const body = await req.json().catch(() => ({}));
   const product = body.product as OneTimeKey;
   if (!process.env.STRIPE_SECRET_KEY) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
-  const offer = ONE_TIME[product]?.enabled ? await currentOffer(product) : null;
-  const price = offer ? await priceIdForLookupKey(offer.lookupKey) : undefined;
-  if (!price) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
-
   const db = supabaseAdmin();
-  const { data: p } = await db.from("profiles").select("stripe_customer_id,birth_date,tier").eq("id", user.id).single();
+  const [price, { data: p }] = await Promise.all([
+    ONE_TIME[product]?.enabled ? currentOffer(product).then(o => (o ? priceIdForLookupKey(o.lookupKey) : undefined)) : Promise.resolve(undefined),
+    db.from("profiles").select("stripe_customer_id,birth_date,tier").eq("id", user.id).single(),
+  ]);
+  if (!price) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
   if (!p?.birth_date) return NextResponse.json({ error: "Add your birth details first." }, { status: 400 });
   if (ONE_TIME[product].membersOnly && p.tier !== "deep") return NextResponse.json({ error: "Extra readings are for Deep Dive members." }, { status: 403 });
 
@@ -28,6 +28,9 @@ export async function POST(req: Request) {
     if (!cat || !cat.questions.includes(body.question)) return NextResponse.json({ error: "Pick a question from the menu." }, { status: 400 });
     metadata.category = cat.key; metadata.question = body.question;
   }
+  // Usually made at sign-up already; if not, it's created while their details save
+  const customerP = ensureCustomer(user, p.stripe_customer_id);
+  customerP.catch(() => {}); // if we return early with an error below, a failure here isn't left unhandled
   if (product === "synastry") {
     const parsed = parseBirth(body);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
@@ -44,11 +47,7 @@ export async function POST(req: Request) {
   }
 
   const s = stripe();
-  let customer = p.stripe_customer_id;
-  if (!customer) {
-    customer = (await s.customers.create({ email: user.email!, metadata: { user_id: user.id } })).id;
-    await db.from("profiles").update({ stripe_customer_id: customer }).eq("id", user.id);
-  }
+  const customer = await customerP;
   const site = process.env.NEXT_PUBLIC_SITE_URL!;
   const session = await s.checkout.sessions.create({
     mode: "payment", customer, line_items: [{ price, quantity: 1 }], client_reference_id: user.id,

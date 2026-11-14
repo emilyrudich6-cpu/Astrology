@@ -15,13 +15,15 @@ export default function People({ people, max, remaining, perMonth, extraPrice }:
   const router = useRouter();
 
   async function buyExtra(id: string) {
-    const r = await fetch("/api/buy", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ product: "extra", person_id: id }) });
-    const j = await r.json().catch(() => ({}));
-    if (j.url) location.href = j.url; else setMsg(j.error ?? "Checkout didn't open. Try again.");
+    setBusy(id); setMsg("Opening secure checkout…");
+    const r = await fetch("/api/buy", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ product: "extra", person_id: id }) }).catch(() => null);
+    const j = r ? await r.json().catch(() => ({})) : {};
+    if (j.url) { location.href = j.url; return true; }
+    setBusy(null); setMsg(j.error ?? "Checkout didn't open. Try again."); return false;
   }
   async function read(p: Person) {
     setBusy(p.id); setMsg("");
-    if (remaining <= 0) { await buyExtra(p.id); setBusy(null); return; }
+    if (remaining <= 0) { await buyExtra(p.id); return; }
     const r = await fetch("/api/people/read", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: p.id }) });
     const j = await r.json().catch(() => ({}));
     setBusy(null);
