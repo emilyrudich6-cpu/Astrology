@@ -3,13 +3,14 @@ import { useEffect, useRef, useState } from "react";
 
 type Place = { label: string; latitude: number; longitude: number; timezone: string };
 
-export default function BirthForm({ endpoint, submitLabel, withRelationship = false, initial, onDone, extra }: {
+export default function BirthForm({ endpoint, submitLabel, withRelationship = false, initial, onDone, extra, nameLabel, defaultRelationship = "partner" }: {
   endpoint: string; submitLabel: string; withRelationship?: boolean; extra?: Record<string, string>;
-  initial?: Partial<{ name: string; birth_date: string; birth_time: string | null; birth_place: string; latitude: number; longitude: number; timezone: string }>;
+  nameLabel?: string; defaultRelationship?: string;
+  initial?: Partial<{ name: string; relationship: string; birth_date: string; birth_time: string | null; birth_place: string; latitude: number; longitude: number; timezone: string }>;
   onDone?: () => void;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
-  const [relationship, setRelationship] = useState("partner");
+  const [relationship, setRelationship] = useState(initial?.relationship ?? defaultRelationship);
   const [date, setDate] = useState(initial?.birth_date ?? "");
   const [time, setTime] = useState(initial?.birth_time ?? "");
   const [noTime, setNoTime] = useState(initial ? !initial.birth_time : false);
@@ -47,7 +48,7 @@ export default function BirthForm({ endpoint, submitLabel, withRelationship = fa
 
   return (
     <form onSubmit={submit}>
-      <div className="field"><label htmlFor="bf-name">{withRelationship ? "Their name" : "Your first name"}</label>
+      <div className="field"><label htmlFor="bf-name">{nameLabel ?? (withRelationship ? "Their name" : "Your first name")}</label>
         <input id="bf-name" required maxLength={60} value={name} onChange={e => setName(e.target.value)} /></div>
       {withRelationship && (
         <div className="field"><label htmlFor="bf-rel">Who are they to you?</label>

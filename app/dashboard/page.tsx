@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import ChartWheel from "@/components/ChartWheel";
 import AskQuestion from "@/components/AskQuestion";
-import People from "@/components/People";
+import SavedFriends from "@/components/SavedFriends";
+import { bigThree, SAVED_FRIENDS_MAX } from "@/lib/friends";
 import PushButton from "@/components/PushButton";
 import { CheckoutButton, ManageBillingButton, BuyButton } from "@/components/BillingButtons";
 import BuyCompatibility from "@/components/BuyCompatibility";
@@ -66,7 +67,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     ? new Date(profile.bonus_timeline_until) : null;
   const askedThisMonth = await planUsedThisMonth(user.id, profile.timezone, "question");
   const compatThisMonth = tier.compatPerMonth ? await planUsedThisMonth(user.id, profile.timezone, "synastry") : 0;
-  const { data: people } = await db.from("people").select("id,name,relationship").eq("user_id", user.id).eq("purchased", false).order("created_at");
+  const { data: people } = await db.from("people").select("id,name,relationship,birth_date,birth_time,birth_place,latitude,longitude,timezone")
+    .eq("user_id", user.id).eq("purchased", false).order("created_at");
+  const friends = (people ?? []).map(f => ({ ...f, birth_place: f.birth_place ?? "", big3: bigThree(birthFromRow(f)) }));
 
   const chart = natalChart(birthFromRow(profile));
   const { data: sightings } = await db.from("journal_entries").select("number_raw,number_norm,seen_at").eq("user_id", user.id).limit(1000);
@@ -169,21 +172,22 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             <BuyButton product="yearahead" label={`Get my year ahead, ${ONE_TIME.yearahead.price} once`} />
           </section>
         )}
-        <section className="panel">
-          <h3>{tier.compatPerMonth > 0 ? "Your People: synastry readings" : ONE_TIME.synastry.label}</h3>
-          {tier.compatPerMonth > 0 ? (
-            <People people={people ?? []} max={tier.savedPeople} perMonth={tier.compatPerMonth}
-              remaining={Math.max(0, tier.compatPerMonth - compatThisMonth)} extraPrice={ONE_TIME.extra.price} />
-          ) : compat ? (
-            <>
-              <p className="hint">{ONE_TIME.synastry.blurb}</p>
+        <section className="panel" id="friends">
+          <h3>Saved Friends</h3>
+          <SavedFriends friends={friends} me={bigThree(birthFromRow(profile))} myName={profile.name || "You"} max={SAVED_FRIENDS_MAX}
+            price={compat?.price ?? ONE_TIME.synastry.price}
+            plan={tier.compatPerMonth > 0 ? { perMonth: tier.compatPerMonth, remaining: Math.max(0, tier.compatPerMonth - compatThisMonth), extraPrice: ONE_TIME.extra.price } : null} />
+        </section>
+        {tier.compatPerMonth === 0 && (
+          <section className="panel">
+            <h3>{ONE_TIME.synastry.label}</h3>
+            <p className="hint">{ONE_TIME.synastry.blurb}</p>
+            {compat && <>
               <p className="hint">Or get {TIERS.deep.compatPerMonth} synastry readings every month with <Link href="/dashboard?plan=deep">Deep Dive, {TIERS.deep.price}</Link>.</p>
               <BuyCompatibility price={compat.price} />
-            </>
-          ) : (
-            <p className="hint">{ONE_TIME.synastry.blurb}</p>
-          )}
-        </section>
+            </>}
+          </section>
+        )}
 
         {invite && <InviteCard link={invite.code ? inviteLink(invite.code) : null} state={invite.state} />}
 

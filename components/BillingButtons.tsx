@@ -14,9 +14,9 @@ export function CheckoutButton({ tier, label, interval = "month", ghost }: { tie
   const [busy, setBusy] = useState(false);
   return <button className={ghost ? "btn ghost" : "btn"} disabled={busy} onClick={async () => { setBusy(true); if (!(await go("/api/checkout", { tier, interval }))) setBusy(false); }}>{busy ? OPENING : label}</button>;
 }
-export function BuyButton({ product, label }: { product: string; label: string }) {
+export function BuyButton({ product, label, friendId }: { product: string; label: string; friendId?: string }) {
   const [busy, setBusy] = useState(false);
-  return <button className="btn ghost" disabled={busy} onClick={async () => { setBusy(true); if (!(await go("/api/buy", { product }))) setBusy(false); }}>{busy ? OPENING : label}</button>;
+  return <button className={friendId ? "btn brass primary" : "btn ghost"} disabled={busy} onClick={async () => { setBusy(true); if (!(await go("/api/buy", friendId ? { product, friend_id: friendId } : { product }))) setBusy(false); }}>{busy ? OPENING : label}</button>;
 }
 export function ManageBillingButton() {
   const [busy, setBusy] = useState(false);

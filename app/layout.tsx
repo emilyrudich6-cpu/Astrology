@@ -46,7 +46,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <footer className="foot">
           <div className="wrap">
             <p>{BRAND.disclaimer}</p>
-            <p>Birthplace data from GeoNames (CC BY 4.0).{user && <> <form action="/auth/signout" method="post" style={{ display: "inline" }}><button className="btn ghost small">Sign out</button></form></>}</p>
+            {/* a form can't sit inside a paragraph (it broke page hydration for signed-in members), so this row is a div */}
+            <div className="foot-row">Birthplace data from GeoNames (CC BY 4.0).{user && <> <form action="/auth/signout" method="post" style={{ display: "inline" }}><button className="btn ghost small">Sign out</button></form></>}</div>
           </div>
         </footer>
       </body>

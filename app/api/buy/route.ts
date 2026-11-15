@@ -31,7 +31,12 @@ export async function POST(req: Request) {
   // Usually made at sign-up already; if not, it's created while their details save
   const customerP = ensureCustomer(user, p.stripe_customer_id);
   customerP.catch(() => {}); // if we return early with an error below, a failure here isn't left unhandled
-  if (product === "synastry") {
+  if (product === "synastry" && typeof body.friend_id === "string" && body.friend_id) {
+    // Compare charts from Saved Friends: the reading is for that saved friend, no details to re-enter
+    const { data: friend } = await db.from("people").select("id").eq("id", body.friend_id).eq("user_id", user.id).eq("purchased", false).maybeSingle();
+    if (!friend) return NextResponse.json({ error: "We couldn't find that friend. Go back and try again." }, { status: 404 });
+    metadata.person_id = friend.id;
+  } else if (product === "synastry") {
     const parsed = parseBirth(body);
     if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
     const relationship = RELATIONSHIPS.includes(body.relationship) ? body.relationship : "partner";

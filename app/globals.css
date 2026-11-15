@@ -580,3 +580,19 @@ html { scroll-behavior: smooth; }
 .writing.problem h3 { margin-top: 0; }
 .writing.problem .btn, .writing .btn { margin-top: 10px; }
 .writing + .writing { margin-top: -8px; }
+
+/* Saved Friends */
+.friends-empty { margin: 4px 0 14px; color: #e6dde9; }
+.friend-card { margin: 0 0 14px; padding: 16px; border-radius: 18px; border: 1px solid #4a3553; background: rgba(22, 8, 24, .55); }
+.friend-card h4 { margin: 0; font-family: var(--display); font-size: 1.5rem; font-weight: 500; color: var(--paper); }
+.friend-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.pair3 { display: table; width: 100%; margin: 12px 0 4px; border-collapse: collapse; table-layout: fixed; }
+.pair3 caption { caption-side: top; text-align: left; font-size: .82rem; color: var(--orchid); padding-bottom: 6px; }
+.pair3 th, .pair3 td { text-align: left; padding: 7px 6px 7px 0; border-top: 1px solid #3a2a42; font-size: .95rem; vertical-align: top; overflow-wrap: anywhere; }
+.pair3 thead th { border-top: 0; font-weight: 600; color: var(--paper); }
+.pair3 thead td { border-top: 0; width: 4.2rem; }
+.pair3 tbody th { font-weight: 400; color: #d8cde0; }
+.pair3 tbody td { color: var(--paper); }
+.friend-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 12px; }
+.buy-pair { margin: 14px 0; padding: 16px; border-radius: 18px; border: 1px solid #4a3553; }
+.foot-row { margin: 1em 0; }

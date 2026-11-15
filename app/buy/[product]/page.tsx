@@ -13,17 +13,22 @@ export const metadata: Metadata = { title: "Checkout · Vertex Point", robots: {
 export const dynamic = "force-dynamic";
 
 /** One-time readings: signed in, birth details saved, then their details (synastry) and Stripe checkout */
-export default async function Buy({ params, searchParams }: { params: Promise<{ product: string }>; searchParams: Promise<{ canceled?: string }> }) {
+export default async function Buy({ params, searchParams }: { params: Promise<{ product: string }>; searchParams: Promise<{ canceled?: string; friend?: string }> }) {
   const { product } = await params;
   if (product !== "synastry" && product !== "yearahead") notFound();
   const o = offer(product as OfferKey);
   const here = `/buy/${product}`;
   const user = await currentUser();
   if (!user) redirect(`/login?next=${encodeURIComponent(here)}`);
-  const { data: profile } = await supabaseAdmin().from("profiles").select("birth_date,tier").eq("id", user.id).maybeSingle();
+  const { canceled, friend: friendId } = await searchParams;
+  const db = supabaseAdmin();
+  const { data: profile } = await db.from("profiles").select("birth_date,tier,name").eq("id", user.id).maybeSingle();
   if (!profile?.birth_date) redirect(`/onboarding?next=${encodeURIComponent(here)}`);
   const ok = (await availability())[o.key];
-  const canceled = (await searchParams).canceled;
+  // From Saved Friends: both people are already known
+  const { data: friend } = product === "synastry" && friendId
+    ? await db.from("people").select("id,name,birth_date,birth_time,birth_place").eq("id", friendId).eq("user_id", user.id).eq("purchased", false).maybeSingle()
+    : { data: null };
   return (
     <section className="narrow" style={{ padding: "36px 22px 90px", maxWidth: 560 }}>
       <StripePreconnect />
@@ -38,8 +43,20 @@ export default async function Buy({ params, searchParams }: { params: Promise<{ 
             <p className="hint">Your Deep Dive plan includes synastry readings each month. <Link href="/dashboard">Use one from Your People</Link> instead of paying.</p>
           )}
           <p>{o.blurb} <Link href="/synastry">See an example</Link>.</p>
-          <h2 style={{ fontSize: "var(--step-1)" }}>Their birth details</h2>
-          <BirthForm endpoint="/api/buy" extra={{ product: "synastry" }} withRelationship submitLabel={`Continue to payment, ${o.priceLine}`} />
+          {friend ? (
+            <div className="buy-pair">
+              <h2 style={{ fontSize: "var(--step-1)" }}>{profile.name || "You"} and {friend.name}</h2>
+              <p className="hint">{friend.name}: born {friend.birth_date}{friend.birth_time ? ` at ${friend.birth_time}` : ", birth time unknown"}{friend.birth_place ? `, ${friend.birth_place}` : ""}. From your Saved Friends.</p>
+              <BuyButton product="synastry" friendId={friend.id} label={`Continue to payment, ${o.priceLine}`} />
+              <p className="hint"><Link href="/buy/synastry">Compare with someone else instead</Link></p>
+            </div>
+          ) : (
+            <>
+              {friendId && <div className="notice">We couldn't find that saved friend, so enter their details below.</div>}
+              <h2 style={{ fontSize: "var(--step-1)" }}>Their birth details</h2>
+              <BirthForm endpoint="/api/buy" extra={{ product: "synastry" }} withRelationship submitLabel={`Continue to payment, ${o.priceLine}`} />
+            </>
+          )}
         </>
       ) : (
         <>
