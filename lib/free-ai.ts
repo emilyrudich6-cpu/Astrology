@@ -1,5 +1,5 @@
 // Short, chart-specific interpretations for the free chart, cached and rate-limited.
-import Anthropic from "@anthropic-ai/sdk";
+import { askClaude, textOf } from "./claude";
 import { createHash } from "crypto";
 import { ANTHROPIC_MODEL, BRAND } from "./config";
 import { supabaseAdmin } from "./supabase";
@@ -47,21 +47,9 @@ Use only the chart data provided; never invent positions, aspects, houses or dat
 Voice: warm, direct, specific, a little poetic but never vague. Second person. No headings, no bullet points, no emoji. Plain paragraphs.
 Don't mention data, software, AI or calculations. No medical, legal or financial advice; never promise outcomes.`;
 
-// These are short pieces written straight from the chart data, so we ask the model to skip its hidden
-// up-front thinking. Left on (the default on current models), thinking counts against max_tokens and takes
-// most of the wait: the topic insight was running out of room, coming back empty, and falling back every time.
 async function write(prompt: string, maxTokens: number): Promise<string> {
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-  const base = { model: ANTHROPIC_MODEL, system: SYSTEM, messages: [{ role: "user" as const, content: prompt }] };
-  let msg;
-  try {
-    msg = await client.messages.create({ ...base, max_tokens: maxTokens, thinking: { type: "between_tools" } });
-  } catch (e) {
-    if ((e as { status?: number })?.status !== 400) throw e;
-    // A model that doesn't take that setting: let it think, with room left over for the words
-    msg = await client.messages.create({ ...base, max_tokens: maxTokens + 3000 });
-  }
-  const text = msg.content.map(b => (b.type === "text" ? b.text : "")).join("").trim();
+  const msg = await askClaude({ max_tokens: maxTokens, system: SYSTEM, messages: [{ role: "user", content: prompt }] });
+  const text = textOf(msg);
   if (!text) throw new Error(`empty reply (stop_reason: ${msg.stop_reason})`);
   return text;
 }

@@ -120,7 +120,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             {boughtRow?.delivered_at ? <>Your {boughtName} is ready. <Link href={`/reading/${boughtRow.id}`}>Open {boughtRow.title ?? "it"}</Link></>
               : boughtState === "failed" || boughtState === "stalled" ? <>Payment received, but your {boughtName} hit a problem while being written. Use Try again below: you won't be charged again.</>
               : boughtRow ? <>Payment received. Your {boughtName}{whoOf(boughtRow.person_id) ? ` for you and ${whoOf(boughtRow.person_id)}` : ""} is being written now.</>
-              : <>Payment received. We're confirming it with Stripe, and your {boughtName} will start in a moment.</>}
+              : session_id ? <>We're confirming your payment with Stripe, and your {boughtName} will start as soon as it's confirmed. If nothing changes within a minute, check that you're signed in with the email you paid with. This account is {user.email}.</>
+              : <>We couldn't find a {boughtName} purchase on this account ({user.email}). If you paid while signed in with a different email, sign out and sign in with that one: your reading is tied to that account.</>}
           </div>
         )}
         {wantPlan && TIERS[wantPlan].forSale && profile.tier === "free" && (
@@ -133,7 +134,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
 
         {askShare && <SharePrompt inviter={askShare.inviter} />}
         <h2>Your readings</h2>
-        {(active || (bought && !boughtRow)) && <AutoRefresh seconds={8} />}
+        {(active || (bought && session_id && !boughtRow)) && <AutoRefresh seconds={8} />}
         {bonusUntil && <div className="notice">Your free month of timeline readings runs until {fmt(bonusUntil.toISOString())}. Want it every month? <a href="/dashboard?plan=deep">Get Deep Dive, {TIERS.deep.price.replace(" / ", "/")}</a></div>}
         {cards.map(c => (
           <WritingLoader key={c.id} id={c.id} kind={c.kind} state={c.state} since={c.since} who={whoOf(c.personId)}

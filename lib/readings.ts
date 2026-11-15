@@ -1,5 +1,5 @@
 // Turns calculated chart data into written readings, following Emily's method.
-import Anthropic from "@anthropic-ai/sdk";
+import { askClaude, textOf } from "./claude";
 import { natalChart, BirthData, NatalChart } from "./engine/natal";
 import { timing, synastry, timelinesTogether, CATEGORY_FOCUS, transitTimeline, groupTimeline } from "./engine/transits";
 import { ANTHROPIC_MODEL, BRAND, QUESTION_MENU } from "./config";
@@ -34,19 +34,14 @@ BOUNDARIES
 - Manifestation rituals are simple and safe: journaling, intention-setting, a walk, a candle you never leave unattended, and so on.
 - End with one italic line: "${BRAND.disclaimer}"`;
 
-function client() {
-  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-}
-
 async function write(task: string, data: unknown, maxTokens = 9000): Promise<string> {
   if (process.env.READINGS_DRY_RUN) return `DRY RUN | prompt chars: ${task.length} | data chars: ${JSON.stringify(data).length}`;
-  const msg = await client().messages.create({
-    model: ANTHROPIC_MODEL,
+  const msg = await askClaude({
     max_tokens: maxTokens,
     system: SYSTEM,
     messages: [{ role: "user", content: `${task}\n\nCHART DATA (JSON):\n${JSON.stringify(data)}` }],
   });
-  const text = msg.content.map(b => (b.type === "text" ? b.text : "")).join("").trim();
+  const text = textOf(msg);
   // Never deliver a blank reading: failing here lets the pipeline retry it
   if (!text) throw new Error(`empty reply (stop_reason: ${msg.stop_reason})`);
   return text;
