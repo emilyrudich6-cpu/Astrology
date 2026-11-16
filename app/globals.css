@@ -651,3 +651,18 @@ details.dash-fold > summary { padding: 16px 0; min-height: 48px; }
 .month-ahead .when { display: inline-block; margin-bottom: 4px; }
 .month-ahead .ask { font-family: var(--display); font-style: italic; font-size: 1.1rem; margin: 12px 0 0; }
 @media (max-width: 640px) { .doc-cover-art { max-width: 132px; height: auto; } }
+
+/* --- free chart teaser and the sample Deep Dive --- */
+.teaser { margin: 28px 0; padding: 22px 20px; border: 1px solid color-mix(in srgb, var(--orchid) 45%, var(--line)); border-radius: 16px; background: var(--ink-2); }
+.teaser h2 { font-size: var(--step-2); margin: 0 0 6px; }
+.teaser-facts { list-style: none; padding: 0; margin: 0; }
+.teaser-facts li { display: grid; gap: 3px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.teaser-label { font-size: .8rem; color: var(--gold); font-weight: 600; }
+.teaser-facts strong { font-family: var(--display); font-size: 1.25rem; font-weight: 500; color: var(--paper); }
+.teaser-lock { font-size: var(--step--1); color: var(--muted); }
+.teaser-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin: 18px 0 0; }
+.teaser-date { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.teaser-date p { margin: 6px 0; }
+.sample-note { border: 1px dashed var(--line); border-radius: 12px; padding: 10px 14px; color: var(--silver); font-size: var(--step--1); }
+.sample-more { columns: 2; column-gap: 28px; padding-left: 1.1em; color: var(--silver); }
+@media (max-width: 600px) { .sample-more { columns: 1; } }

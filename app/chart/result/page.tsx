@@ -10,6 +10,8 @@ import { signByName } from "@/lib/signs";
 import NewsletterSignup from "@/components/NewsletterSignup";
 import Numerology from "@/components/Numerology";
 import ChartReveal from "@/components/ChartReveal";
+import DeepDiveTeaser from "@/components/DeepDiveTeaser";
+import { availability } from "@/lib/offers";
 import { revealInsight } from "@/lib/reveal";
 
 export const metadata: Metadata = { title: "Your chart · Vertex Point", robots: { index: false } };
@@ -91,6 +93,8 @@ export default async function Result({ searchParams }: { searchParams: Promise<{
           </li>
         ))}
       </ul>
+
+      <DeepDiveTeaser chart={c} birth={b} uncertain={fc.uncertainNames} canBuy={(await availability().catch(() => null))?.deepdive ?? false} />
 
       <details className="full house-guide">
         <summary>What do the twelve houses mean?</summary>

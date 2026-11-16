@@ -78,7 +78,7 @@ export default async function Home() {
               <li key={o.key}>
                 <div className="plan-main">
                   <p className="plan-name">{o.label}</p>
-                  <p className="plan-blurb">{o.blurb}{o.key === "synastry" && <> <Link href="/synastry">See an example</Link></>}</p>
+                  <p className="plan-blurb">{o.blurb}{o.key === "synastry" && <> <Link href="/synastry">See an example</Link></>}{o.key === "deepdive" && <> <Link href="/deep-dive">See an example</Link></>}</p>
                 </div>
                 <p className="plan-price">{o.priceLine}</p>
                 {available[o.key]

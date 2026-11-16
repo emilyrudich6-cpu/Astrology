@@ -69,7 +69,7 @@ export default async function Buy({ params, searchParams }: { params: Promise<{ 
         </>
       ) : (
         <>
-          <p>{o.blurb}</p>
+          <p>{o.blurb}{product === "deepdive" && <> <Link href="/deep-dive">See an example</Link>.</>}</p>
           <BuyButton product={product as "yearahead" | "deepdive"} label={`${o.cta} · ${o.price}`} />
         </>
       )}
