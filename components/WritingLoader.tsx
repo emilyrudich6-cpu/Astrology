@@ -56,6 +56,13 @@ export default function WritingLoader({ id, kind, state, since, art, sign, who }
       <RetryReading id={id} />
     </div>
   );
+  if (state === "waiting") return (
+    <div className="writing" role="status" aria-live="polite" data-kind={kind} data-state={state}>
+      <h3>You're in line</h3>
+      <p className="writing-line">Your payment is confirmed. A few {name}s are being written right now, and yours starts on its own as soon as one finishes.</p>
+      <p className="hint">You don't need to do anything, and you can leave this page. It'll be in Your readings when it's ready.</p>
+    </div>
+  );
   const line = state === "queued" ? "Payment and details confirmed. Starting in a moment"
     : state === "retrying" ? "The first try hit a snag. Trying again"
     : elapsed > expected * 1.25 ? "Taking longer than usual. Still writing"

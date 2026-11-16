@@ -3,7 +3,8 @@
 export const STALL_MINUTES = 15;   // same as the scheduler's "writer crashed" cut-off
 const QUEUE_SECONDS = 90;          // a reading should be picked up well within this
 
-export type CardState = "queued" | "writing" | "retrying" | "stalled" | "failed";
+export type CardState = "queued" | "waiting" | "writing" | "retrying" | "stalled" | "failed";
+const LINE_MINUTES = 35;           // a place in line is re-confirmed at least every 15 minutes
 export interface ReadingRow {
   id: string; kind: string; status: string; attempts?: number | null; person_id?: string | null;
   deliver_at: string; delivered_at?: string | null; created_at: string; claimed_at?: string | null;
@@ -22,6 +23,8 @@ export function cardState(r: ReadingRow, now = Date.now()): CardState | null {
     const started = r.claimed_at ? new Date(r.claimed_at).getTime() : 0;
     return now - started > STALL_MINUTES * 60000 ? "stalled" : "writing";
   }
+  // Waiting in line for a Deep Dive place: the time it last checked is kept in claimed_at
+  if (r.kind === "fullchart" && (r.attempts ?? 0) === 0 && r.claimed_at && now - new Date(r.claimed_at).getTime() < LINE_MINUTES * 60000) return "waiting";
   if ((r.attempts ?? 0) > 0) return "retrying";
   return now - new Date(r.created_at).getTime() > QUEUE_SECONDS * 1000 ? "stalled" : "queued";
 }

@@ -11,6 +11,23 @@ import { TIERS, Tier } from "./config";
 const PREGENERATE_HOURS = 12;   // write readings this far ahead of delivery
 export const STUCK_MINUTES = 15;
 const MAX_ATTEMPTS = 3;
+/** The waiting line: how many Deep Dives are written at the same time. Each one makes three large AI requests,
+ *  so a burst of buyers is spread out instead of running into the AI rate limit. Others wait and start on their own. */
+export const DEEP_DIVES_AT_ONCE = Math.max(1, Number(process.env.DEEP_DIVES_AT_ONCE) || 3);
+
+/** Start the next Deep Dive that's waiting in line, in a fresh request of its own (each needs its full time allowance) */
+async function startNextInLine() {
+  const site = process.env.NEXT_PUBLIC_SITE_URL, secret = process.env.CRON_SECRET;
+  if (!site || !secret) return; // the 15-minute scheduler still picks it up
+  await fetch(`${site}/api/queue/next`, { method: "POST", headers: { authorization: `Bearer ${secret}` }, signal: AbortSignal.timeout(8000) }).catch(() => {});
+}
+
+/** The oldest Deep Dive waiting in line, if there's one */
+export async function nextInLine(): Promise<string | null> {
+  const { data } = await supabaseAdmin().from("readings").select("id").eq("kind", "fullchart").eq("status", "scheduled")
+    .lte("deliver_at", new Date().toISOString()).order("created_at").limit(1);
+  return data?.[0]?.id ?? null;
+}
 
 export function birthFromRow(r: any): BirthData {
   return {
@@ -24,6 +41,15 @@ export async function generateReading(id: string) {
   const db = supabaseAdmin();
   const { data: row } = await db.from("readings").select("*").eq("id", id).single();
   if (!row || row.status !== "scheduled") return;
+  if (row.kind === "fullchart") {
+    const { count } = await db.from("readings").select("id", { count: "exact", head: true }).eq("kind", "fullchart").eq("status", "generating")
+      .gte("claimed_at", new Date(Date.now() - STUCK_MINUTES * 60000).toISOString());
+    if ((count ?? 0) >= DEEP_DIVES_AT_ONCE) {
+      // In line: nothing is used up, and the time is noted so its card can say "You're in line" instead of "stalled"
+      await db.from("readings").update({ claimed_at: new Date().toISOString() }).eq("id", id).eq("status", "scheduled");
+      return "waiting" as const;
+    }
+  }
   const { data: claimed } = await db.from("readings")
     .update({ status: "generating", claimed_at: new Date().toISOString(), attempts: row.attempts + 1 })
     .eq("id", id).eq("status", "scheduled").select().maybeSingle();
@@ -57,6 +83,7 @@ export async function generateReading(id: string) {
     await db.from("readings").update({ status: failed ? "failed" : "scheduled", error: String(e?.message ?? e).slice(0, 500) }).eq("id", id);
     console.error("reading failed", id, e);
   }
+  if (row.kind === "fullchart") await startNextInLine(); // a place just opened up
 }
 
 /** Write these readings right now, side by side, then release them. One immediate second try each,
@@ -64,7 +91,7 @@ export async function generateReading(id: string) {
 export async function writeNow(ids: string[]) {
   const db = supabaseAdmin();
   await Promise.all(ids.map(async id => {
-    await generateReading(id);
+    if ((await generateReading(id)) === "waiting") return; // in line: it starts when a place opens
     const { data } = await db.from("readings").select("status").eq("id", id).maybeSingle();
     if (data?.status === "scheduled") await generateReading(id);
   }));
