@@ -25,6 +25,21 @@ export async function startIncludedReading(userId: string, personId: string): Pr
   return { ok: true, started: true };
 }
 
+/** Members get Upcoming Transits (the 12-month timeline) included: one a year, started if they don't have a recent one. */
+export async function ensureTransits(userId: string) {
+  const db = supabaseAdmin();
+  const { data: p } = await db.from("profiles").select("tier,birth_date").eq("id", userId).maybeSingle();
+  if (!p?.birth_date) return { ok: false as const, error: "Add your birth details first.", status: 400 };
+  if (!TIERS[p.tier as Tier]?.monthlyTimeline) return { ok: false as const, error: "Upcoming Transits is included with Vertex Point Monthly.", status: 403 };
+  const { data: existing } = await db.from("readings").select("id").eq("user_id", userId).eq("kind", "yearahead").neq("status", "failed")
+    .gte("created_at", new Date(Date.now() - 330 * 86400000).toISOString()).limit(1);
+  if (existing?.length) return { ok: true as const, started: false };
+  const { data: r } = await db.from("readings").insert({ user_id: userId, kind: "yearahead", title: "Your upcoming transits", deliver_at: new Date().toISOString() }).select("id").single();
+  if (!r) return { ok: false as const, error: "Couldn't start it. Try again.", status: 500 };
+  after(() => writeNow([r.id]));
+  return { ok: true as const, started: true };
+}
+
 /** Members get one Full Chart reading. Starts it if they don't have one yet. */
 export async function ensureFullChart(userId: string, opts: { force?: boolean } = {}) {
   const db = supabaseAdmin();

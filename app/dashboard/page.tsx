@@ -12,6 +12,7 @@ import { monthAhead } from "@/lib/month-ahead";
 import { currentOffer } from "@/lib/stripe";
 import AutoRefresh from "@/components/AutoRefresh";
 import StartFullChart from "@/components/StartFullChart";
+import StartIncluded from "@/components/StartIncluded";
 import WritingLoader from "@/components/WritingLoader";
 import { readingCards, cardState, KIND_NAME } from "@/lib/reading-status";
 import Numerology from "@/components/Numerology";
@@ -82,8 +83,9 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const invite = FEATURES.referrals ? { code: await getInviteCode(user.id), state: await inviteStatus(user.id) } : null;
   const wantPlan = plan === "timeline" || plan === "deep" ? plan : null;
   const fmt = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: profile.timezone });
-  const kindLabel: Record<string, string> = { natal: "your chart reading", timeline: "your monthly timeline", question: "an answer to your question", synastry: "your Compatibility Reading", yearahead: "your year-ahead timeline", fullchart: "your Natal Chart Deep Dive" };
+  const kindLabel: Record<string, string> = { natal: "your chart reading", timeline: "your monthly timeline", question: "an answer to your question", synastry: "your Compatibility Reading", yearahead: "your Upcoming Transits", fullchart: "your Natal Chart Deep Dive" };
   const can = await availability(); // a buy button shows only when Stripe charges exactly the price shown
+  const hasTransits = (readings ?? []).some(r => r.kind === "yearahead" && r.status !== "failed");
   const hasDeepDive = (readings ?? []).some(r => r.kind === "fullchart" && r.status !== "failed");
   const monthly = TIERS.deep.price.replace(" / ", "/");
   const hasFullChart = (readings ?? []).some(r => r.kind === "fullchart" && r.status !== "failed");
@@ -183,9 +185,12 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <details className="transit-drop" id="transits">
             <summary>{ONE_TIME.yearahead.label}</summary>
             <p className="hint">{ONE_TIME.yearahead.blurb}</p>
-            {can.yearahead
-              ? <BuyButton product="yearahead" label={`${ONE_TIME.yearahead.cta} · ${ONE_TIME.yearahead.price}`} />
-              : <p className="hint">Coming soon.</p>}
+            {tier.monthlyTimeline && profile.tier !== "free"
+              ? (hasTransits ? <p className="hint">Included in your membership. Yours is in Your readings.</p>
+                : <><p className="hint">Included in your membership.</p><StartIncluded endpoint="/api/transits" label={ONE_TIME.yearahead.cta ?? "Explore your transits"} /></>)
+              : can.yearahead
+                ? <BuyButton product="yearahead" label={`${ONE_TIME.yearahead.cta} · ${ONE_TIME.yearahead.price}`} />
+                : <p className="hint">Coming soon.</p>}
           </details>
         )}
         {isAdmin(user.email) && !hasDeepDive && (

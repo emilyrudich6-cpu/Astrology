@@ -38,11 +38,11 @@ export const TIERS: Record<Tier, {
   },
   deep: {
     // The subscription. Customers see "Vertex Point Monthly"; the internal key stays "deep" so existing members keep their plan.
-    label: "Vertex Point Monthly", price: "$22 / month",
-    blurb: "Your Month Ahead, a monthly timeline update, three compatibility readings each billing month, and two personal astrology insights. Your insights arrive in Your readings on surprise days.",
-    perks: ["Your Month Ahead: three dates from your own transits", "A monthly timeline update", "Three compatibility readings each billing month with your saved friends", "Two personal astrology insights a month, in Your readings on surprise days", "Extra compatibility readings $3.99 each"],
-    monthlyTimeline: true, questionsPerMonth: 2, savedPeople: 30, compatPerMonth: 3, fullChart: false, // the Deep Dive is its own $27 reading
-    stripeLookupKey: "vp_monthly", // $22/month. The older $9.99 "deep_monthly" price still maps here through its "tier" metadata
+    label: "Vertex Point Monthly", price: "$18 / month",
+    blurb: "Your Month Ahead, a monthly timeline update, Upcoming Transits included, two compatibility readings each billing month, and two personal astrology insights. Your insights arrive in Your readings on surprise days.",
+    perks: ["Your Month Ahead: three dates from your own transits", "A monthly timeline update", "Upcoming Transits included: your next 12 months of peak dates", "Two compatibility readings each billing month with your saved friends", "Two personal astrology insights a month, in Your readings on surprise days", "Extra compatibility readings $3.99 each"],
+    monthlyTimeline: true, questionsPerMonth: 2, savedPeople: 30, compatPerMonth: 2, fullChart: false, // the Deep Dive is its own $27 reading
+    stripeLookupKey: "vp_monthly", // $18/month. The older $9.99 "deep_monthly" price still maps here through its "tier" metadata
     stripeYearlyLookupKey: "deep_yearly", // not sold now; kept so existing yearly members keep their plan
     forSale: true,
   },
@@ -65,7 +65,7 @@ export const ONE_TIME: Record<OneTimeKey, {
     bonusTimelineDays: 30,
   },
   question: { enabled: false, label: "Single question", price: "$9", blurb: "Pick one question from the menu and get your answer in minutes.", stripeLookupKey: "one_question" },
-  extra: { enabled: true, membersOnly: true, label: "Extra synastry reading", price: "$3.99", blurb: "One more synastry reading this month, beyond the 3 in your plan.", stripeLookupKey: "compat_extra" },
+  extra: { enabled: true, membersOnly: true, label: "Extra synastry reading", price: "$3.99", blurb: "One more synastry reading this month, beyond the 2 in your plan.", stripeLookupKey: "compat_extra" },
   // Sold as "Upcoming Transits", in a small dropdown under the Deep Dive
   yearahead: { enabled: true, label: "Upcoming Transits", price: "$7.77", cta: "Explore your transits", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripeLookupKey: "yearahead_v2" },
   // The long personalized report (angles, planets, aspects, houses, timeline). Stored as a "fullchart" reading.

@@ -1,7 +1,7 @@
 import { NextResponse, after } from "next/server";
 import Stripe from "stripe";
 import { stripe, tierForPrice } from "@/lib/stripe";
-import { ensureFullChart } from "@/lib/compat";
+import { ensureTransits } from "@/lib/compat";
 import { supabaseAdmin } from "@/lib/supabase";
 import { fulfilOneTime } from "@/lib/fulfil";
 import { writeNow } from "@/lib/pipeline";
@@ -25,11 +25,11 @@ export async function POST(req: Request) {
     const userId = sub.metadata?.user_id;
     const q = db.from("profiles").update({ tier, subscription_status: sub.status, stripe_subscription_id: sub.id, stripe_customer_id: String(sub.customer) });
     await (userId ? q.eq("id", userId) : q.eq("stripe_customer_id", String(sub.customer)));
-    // New members get their Full Chart right away
+    // New members get their Upcoming Transits right away
     if (tier !== "free") {
       const { data: prof } = userId ? { data: { id: userId } }
         : await db.from("profiles").select("id").eq("stripe_customer_id", String(sub.customer)).maybeSingle();
-      if (prof?.id) await ensureFullChart(prof.id);
+      if (prof?.id) await ensureTransits(prof.id);
     }
   };
   switch (event.type) {

@@ -12,7 +12,7 @@ export interface ReadingRow {
 export interface Card { id: string; kind: string; personId: string | null; state: CardState; since: string }
 
 export const KIND_NAME: Record<string, string> = {
-  fullchart: "Natal Chart Deep Dive", synastry: "Compatibility Reading", natal: "chart", timeline: "timeline", yearahead: "year ahead", question: "insight",
+  fullchart: "Natal Chart Deep Dive", synastry: "Compatibility Reading", natal: "chart", timeline: "timeline", yearahead: "Upcoming Transits", question: "insight",
 };
 
 export function cardState(r: ReadingRow, now = Date.now()): CardState | null {
