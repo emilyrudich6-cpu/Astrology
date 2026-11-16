@@ -666,3 +666,7 @@ details.dash-fold > summary { padding: 16px 0; min-height: 48px; }
 .sample-note { border: 1px dashed var(--line); border-radius: 12px; padding: 10px 14px; color: var(--silver); font-size: var(--step--1); }
 .sample-more { columns: 2; column-gap: 28px; padding-left: 1.1em; color: var(--silver); }
 @media (max-width: 600px) { .sample-more { columns: 1; } }
+.best-tag { display: inline-block; vertical-align: middle; margin-left: 8px; font-family: var(--body); font-size: .72rem; font-weight: 600; color: var(--paper); background: color-mix(in srgb, var(--orchid) 26%, transparent); border-radius: 999px; padding: 3px 10px; }
+.sn-save-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.keep-handy { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.keep-handy-tip { flex-basis: 100%; }

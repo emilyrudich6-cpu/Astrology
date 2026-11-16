@@ -2,6 +2,7 @@
 // The Seeing Numbers journal for signed-in members. Entries are saved to their account;
 // the cap and ownership are enforced on the server.
 import { useEffect, useMemo, useState } from "react";
+import KeepHandy from "./KeepHandy";
 import Link from "next/link";
 import { normalizeNumber, interpretNumber, GENERAL_QUESTION, whenLabel } from "@/lib/seeing-numbers";
 
@@ -91,7 +92,7 @@ export default function SeeingNumbers({ initial, cap, compare, deep }: { initial
           <div className="field"><label htmlFor="sn-note">What was happening, or what were you thinking about? <span className="hint">(optional)</span></label>
             <textarea id="sn-note" rows={3} maxLength={1000} value={note} onChange={e => setNote(e.target.value)} placeholder="I saw 12:12 right before I called my boss." /></div>
           {err && <p className="error">{err}</p>}
-          <button className="btn" disabled={busy}>{busy ? "Saving…" : editing ? "Save changes" : "Save it"}</button>
+          <div className="sn-save-row"><button className="btn" disabled={busy}>{busy ? "Saving…" : editing ? "Save changes" : "Save it"}</button><KeepHandy what="this journal" /></div>
           {cap != null && !editing && <p className="hint" style={{ marginTop: 10 }}>{entries.length} of {cap} entries saved during the pilot. Private to your account.</p>}
         </form>
       ) : (

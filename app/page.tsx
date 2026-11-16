@@ -90,7 +90,7 @@ export default async function Home() {
         </div>
         <div className="plan-card plan-monthly">
           <div className="plan-main">
-            <h3>{MONTHLY.label}</h3>
+            <h3>{MONTHLY.label} <span className="best-tag">Best value</span></h3>
             <p className="plan-blurb">{MONTHLY.blurb}</p>
             <p className="hint">Cancel any time.</p>
           </div>
