@@ -5,6 +5,7 @@ import { BRAND } from "@/lib/config";
 import { currentUser, isAdmin } from "@/lib/supabase";
 import BrandLine from "@/components/BrandLine";
 import AuthHashHandler from "@/components/AuthHashHandler";
+import SiteAnalytics from "@/components/SiteAnalytics";
 
 export const metadata: Metadata = {
   title: { default: "Vertex Point · Birth Charts & Synastry", template: "%s" },
@@ -27,6 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <AuthHashHandler />
+        <SiteAnalytics />
         <header className="wrap top">
           <Link href="/" className="brand">{BRAND.name}</Link>
           <BrandLine text={BRAND.tagline} />
