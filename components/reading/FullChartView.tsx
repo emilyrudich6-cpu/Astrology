@@ -33,12 +33,15 @@ function Table({ head, rows, className }: { head: string[]; rows: (React.ReactNo
   );
 }
 
-export default function FullChartView({ doc }: { doc: FullChartDoc }) {
+export default function FullChartView({ doc, children }: { doc: FullChartDoc; children?: React.ReactNode }) {
   const { calc: c, text: t } = doc;
   const h = c.header;
   const art = SIGN_ART[h.sunSign];
-  const line = (label: string) => t.glanceLines?.find(g => g.label === label)?.line ?? "";
-  const footer = `${h.name} · The Full Chart · ${h.born}`;
+  const g1 = (label: string) => t.glanceLines?.find(g => g.label === label);
+  const line = (label: string) => g1(label)?.line ?? "";
+  // Deep Dives written since this layout carry "how it feels" and "how it shows up"; earlier ones have the one-liner
+  const hasFeel = t.glanceLines?.some(g => g.feels && g.showsUp);
+  const footer = `${h.name} · Natal Chart Deep Dive · ${h.born}`;
 
   return (
     <div className="doc" data-footer={footer}>
@@ -46,7 +49,7 @@ export default function FullChartView({ doc }: { doc: FullChartDoc }) {
         {art && <img className="doc-cover-art" src={art} alt={`${h.sunSign} artwork`} width={400} height={600} />}
         <div className="doc-cover-text">
           <h1>{h.name}</h1>
-          <p className="doc-cover-sub">The Full Chart, and what comes next</p>
+          <p className="doc-cover-sub">Natal Chart Deep Dive</p>
           <p>{h.born}</p>
           <p className="doc-cover-three">{h.bigThree}</p>
           <div className="doc-cover-wheel">
@@ -60,7 +63,9 @@ export default function FullChartView({ doc }: { doc: FullChartDoc }) {
       {h.warnings.length > 0 && <div className="notice">{h.warnings.join(" ")}</div>}
 
       <Section title="At a Glance" open>
-        <Table head={["Signature", "Placement", "In one line"]} rows={c.glance.map(g => [g.label, g.placement, line(g.label)])} />
+        {hasFeel
+          ? <Table head={["Signature", "Placement", "How it feels", "How it shows up"]} rows={c.glance.map(g => [g.label, g.placement, g1(g.label)?.feels ?? line(g.label), g1(g.label)?.showsUp ?? ""])} />
+          : <Table head={["Signature", "Placement", "In one line"]} rows={c.glance.map(g => [g.label, g.placement, line(g.label)])} />}
         <Table head={["Body", "Position", "House", "Speed at birth", "Condition"]}
           rows={c.planetRows.map(p => [p.body, p.position, p.house, p.speed, p.condition])} className="doc-table-dense" />
         <p className="hint no-print">Tap a heading below to read that part.</p>
@@ -157,18 +162,6 @@ export default function FullChartView({ doc }: { doc: FullChartDoc }) {
         {t.otherCurrents && <p className="doc-fine"><Inline text={t.otherCurrents} /></p>}
       </Section>
 
-      {c.hd && (
-        <Section title="Bonus: Human Design" intro={`Calculated from the same birth data (Design date: ${new Date(c.hd.designDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" })}, when the Sun was 88° earlier).`}>
-          <Table head={["Element", "Yours", "In plain English"]} rows={([
-            ["Type", c.hd.type], ["Strategy", c.hd.strategy], ["Authority", c.hd.authority], ["Profile", c.hd.profile],
-            ["Definition", c.hd.definition], ["Incarnation Cross", c.hd.incarnationCross],
-            ["Defined centres", c.hd.definedCenters.join(", ") || "None"], ["Open centres", c.hd.openCenters.join(", ") || "None"],
-            ["Channels", c.hd.channels.join(" · ") || "None"], ["Signature / not-self", c.hd.signature],
-          ] as [string, string][]).map(([k, v], i) => [k, v, (t.hdPlain?.find(x => x.element.toLowerCase().startsWith(k.toLowerCase().slice(0, 6))) ?? t.hdPlain?.[i])?.plain ?? ""])} />
-          <Rich text={t.hdEchoes} />
-        </Section>
-      )}
-
       <Section title="Bonus: Numerology">
         <p><strong>Life Path {c.numerology.lifePath.display ?? c.numerology.lifePath.number}</strong> ({c.numerology.lifePath.working}). Personal Years: {c.numerology.personalYears.map(y => `${y.year} is a ${y.number}`).join(", ")}.</p>
         <Rich text={t.numerology} />
@@ -193,10 +186,12 @@ export default function FullChartView({ doc }: { doc: FullChartDoc }) {
         </Section>
       )}
 
+      {children}
+
       <section className="doc-section doc-fine">
         <h3>How this was calculated</h3>
-        <p>Tropical zodiac, Placidus houses, true lunar node (mean node in brackets), mean Black Moon Lilith. Aspect orbs up to 8° for majors and 2° for minors. Transit dates are exact-hit dates in Universal Time, so the local date can be a day earlier. Human Design uses the standard 88° solar-arc Design calculation. Chiron and the Vertex aren't included, and the Descendant is saved for your synastry readings.</p>
-        <p>Astrology, Human Design and numerology are frameworks for reflection and fun. This reading is for entertainment and self-exploration, not a prediction of fixed outcomes.</p>
+        <p>Tropical zodiac, Placidus houses, true lunar node (mean node in brackets), mean Black Moon Lilith. Aspect orbs up to 8° for majors and 2° for minors. Transit dates are exact-hit dates in Universal Time, so the local date can be a day earlier. Chiron and the Vertex aren't included, and the Descendant is saved for your synastry readings.</p>
+        <p>Astrology and numerology are frameworks for reflection and fun. This reading is for entertainment and self-exploration, not a prediction of fixed outcomes.</p>
       </section>
     </div>
   );

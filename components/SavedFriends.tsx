@@ -11,7 +11,7 @@ export type Friend = {
   id: string; name: string; relationship: string; birth_date: string; birth_time: string | null; birth_place: string;
   latitude: number; longitude: number; timezone: string; big3: BigThree;
 };
-type Plan = { remaining: number; perMonth: number; extraPrice: string } | null;
+type Plan = { remaining: number; perMonth: number; extraPrice: string; renews?: string } | null;
 
 const moonText = (m: BigThree["moon"]) => (Array.isArray(m) ? `${m[0]} or ${m[1]}` : m);
 
@@ -52,7 +52,7 @@ export default function SavedFriends({ friends, me, myName, max, plan, price }: 
 
   return (
     <div className="friends">
-      {plan && <p className="hint">{plan.remaining > 0 ? `${plan.remaining} of ${plan.perMonth} synastry readings left this month.` : `You've used this month's ${plan.perMonth} readings. More are ${plan.extraPrice} each.`}</p>}
+      {plan && <p className="hint">{plan.remaining > 0 ? `${plan.remaining} of ${plan.perMonth} compatibility readings left this billing month.` : `You've used all ${plan.perMonth} compatibility readings for this billing month.${plan.renews ? ` Your next ${plan.perMonth} arrive on ${plan.renews}.` : ""} More are ${plan.extraPrice} each.`}</p>}
       {friends.length === 0 && !adding && <p className="friends-empty">Add a friend to see your charts side by side.</p>}
       {friends.map(f => editing === f.id ? (
         <div key={f.id} className="friend-card">
@@ -84,7 +84,7 @@ export default function SavedFriends({ friends, me, myName, max, plan, price }: 
             <button type="button" className="linklike" onClick={() => { setEditing(f.id); setAdding(false); }}>Edit</button>
             <button type="button" className="linklike" disabled={busy === f.id} onClick={() => remove(f)} aria-label={`Remove ${f.name}`}>Remove</button>
           </div>
-          {!plan && <p className="hint">Compare charts opens the Compatibility (Synastry) Reading for you two, {price} once.</p>}
+          {!plan && <p className="hint">Compare charts opens the Compatibility (Synastry) Reading for you two, {price}.</p>}
         </div>
       ))}
       {msg && <p className="notice" role="status">{msg}</p>}

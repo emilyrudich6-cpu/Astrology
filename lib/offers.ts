@@ -6,12 +6,12 @@ export type OfferKey = "synastry" | "deepdive" | "yearahead" | "deep";
 export interface Offer { key: OfferKey; label: string; price: string; priceLine: string; cta: string; blurb: string; path: string; lookupKey: string; interval: "month" | null }
 
 const once = (k: "synastry" | "deepdive" | "yearahead", path: string, blurb: string): Offer =>
-  ({ key: k, label: ONE_TIME[k].label, price: ONE_TIME[k].price, priceLine: `${ONE_TIME[k].price} one time`, cta: ONE_TIME[k].cta!, blurb, path, lookupKey: ONE_TIME[k].stripeLookupKey, interval: null });
+  ({ key: k, label: ONE_TIME[k].label, price: ONE_TIME[k].price, priceLine: ONE_TIME[k].price, cta: ONE_TIME[k].cta!, blurb, path, lookupKey: ONE_TIME[k].stripeLookupKey, interval: null });
 
 /** The one-time readings, in the order they're shown, then the subscription */
 export const OFFERS: Offer[] = [
   once("synastry", "/buy/synastry", "Your chart next to theirs: attraction, communication, friction and the dates your timelines line up."),
-  once("deepdive", "/buy/deepdive", "Your whole birth chart in writing: every planet, the aspects, your chart's shape and hidden talents."),
+  once("deepdive", "/buy/deepdive", "Your long personal report: the angles, every planet and house, the aspects, and a timeline of exact dates."),
   once("yearahead", "/buy/yearahead", "Your next 12 months: every major transit peak date, grouped into themes."),
   { key: "deep", label: TIERS.deep.label, price: TIERS.deep.price, priceLine: TIERS.deep.price.replace(" / ", "/"), cta: "Join monthly", path: "/dashboard?plan=deep",
     blurb: TIERS.deep.blurb, lookupKey: TIERS.deep.stripeLookupKey!, interval: "month" },

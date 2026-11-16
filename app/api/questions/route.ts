@@ -11,11 +11,11 @@ export async function POST(req: Request) {
   const cat = QUESTION_MENU.find(c => c.key === category);
   if (!cat || !cat.questions.includes(question)) return NextResponse.json({ error: "Pick a question from the menu." }, { status: 400 });
   const db = supabaseAdmin();
-  const { data: p } = await db.from("profiles").select("tier,timezone").eq("id", user.id).single();
+  const { data: p } = await db.from("profiles").select("tier,timezone,stripe_subscription_id").eq("id", user.id).single();
   const allowed = p ? TIERS[p.tier as Tier].questionsPerMonth : 0;
   if (!allowed) return NextResponse.json({ error: "Questions are part of the Vertex Point Monthly plan." }, { status: 403 });
-  const used = await planUsedThisMonth(user.id, p!.timezone, "question");
-  if (used >= allowed) return NextResponse.json({ error: `You've asked all ${allowed} questions for this month.` }, { status: 429 });
+  const used = await planUsedThisMonth(user.id, p!.timezone, "question", p!.stripe_subscription_id);
+  if (used >= allowed) return NextResponse.json({ error: `You've asked all ${allowed} questions for this billing month.` }, { status: 429 });
   await db.from("readings").insert({
     user_id: user.id, kind: "question", category: cat.key, question, title: question,
     deliver_at: surpriseDeliveryTime(p!.timezone).toISOString(),

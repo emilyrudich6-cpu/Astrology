@@ -15,8 +15,7 @@ export default async function AudioPreorder() {
       <h2>{a.label}</h2>
       <p>{a.blurb}</p>
       <p className="hint">{AUDIO_DELIVERY_NOTE}</p>
-      <p className="plan-price">{a.price} one time</p>
-      <BuyButton product="audio" label={a.cta!} />
+      <BuyButton product="audio" label={`${a.cta} · ${a.price}`} />
     </aside>
   );
 }

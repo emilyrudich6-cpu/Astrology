@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
   if (product === "deepdive") {
     // One Deep Dive per account: never charge for a report they already have
-    const { data: have } = await db.from("readings").select("id").eq("user_id", user.id).eq("kind", "natal").neq("status", "failed").limit(1);
+    const { data: have } = await db.from("readings").select("id").eq("user_id", user.id).eq("kind", "fullchart").neq("status", "failed").limit(1);
     if (have?.length) return NextResponse.json({ error: "You already have your Natal Chart Deep Dive. It's in Your readings." }, { status: 400 });
   }
 

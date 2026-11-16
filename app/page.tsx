@@ -62,9 +62,19 @@ export default async function Home() {
       <section className="wrap block plans" id="plans" aria-labelledby="plans-h">
         <h2 id="plans-h">Readings &amp; Plans</h2>
         <div className="plan-card">
-          <h3>One-time readings</h3>
+          <h3>Readings</h3>
           <ul className="plan-rows">
-            {ONE_TIME_OFFERS.map(o => (
+            {ONE_TIME_OFFERS.map(o => o.key === "yearahead" ? (
+              <li key={o.key} className="transit-row">
+                <details className="transit-drop">
+                  <summary>{o.label}</summary>
+                  <p className="plan-blurb">{o.blurb}</p>
+                  {available[o.key]
+                    ? <Link className="btn small" href={`/login?next=${encodeURIComponent(o.path)}`}>{o.cta} · {o.price}</Link>
+                    : <span className="hint plan-soon">Coming soon</span>}
+                </details>
+              </li>
+            ) : (
               <li key={o.key}>
                 <div className="plan-main">
                   <p className="plan-name">{o.label}</p>

@@ -15,7 +15,7 @@ export default function StartFullChart() {
   }
   return (
     <>
-      <button className="btn" onClick={go} disabled={busy}>{busy ? "Starting…" : "Write my Full Chart"}</button>
+      <button className="btn" onClick={go} disabled={busy}>{busy ? "Starting…" : "Write my Deep Dive (admin test)"}</button>
       <p className="hint" role="status">{err || (busy ? "" : "It takes about three minutes to write.")}</p>
     </>
   );

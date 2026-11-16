@@ -4,7 +4,7 @@ import { ensureFullChart } from "@/lib/compat";
 
 export const maxDuration = 300; // the reading is written right after this responds
 
-/** Members: start your Full Chart reading (once). */
+/** Admin test: write the Natal Chart Deep Dive without a payment (customers get it by buying it). */
 export async function POST() {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: "Sign in first." }, { status: 401 });

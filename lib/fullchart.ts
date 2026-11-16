@@ -1,4 +1,4 @@
-// The Full Chart reading: every calculated table from the engine, plus the written
+// The Natal Chart Deep Dive reading: every calculated table from the engine, plus the written
 // sections from Claude, stored together as one JSON document.
 import { DateTime } from "luxon";
 import { natalChart, BirthData, NatalChart, round, RULER_MODERN, RULER_TRADITIONAL, ELEMENT, MODALITY } from "./engine/natal";
@@ -7,7 +7,7 @@ import { transitTimeline, skyEvents, currentTransits, groupTimeline, HOUSE_THEME
 import { dominantPlanet } from "./engine/dominant";
 import {
   fixedStars, birthEclipses, progressedStations, stationsNearBirth, upcomingRetrogrades, progressions,
-  humanDesign, numerology, parallels, fmtOrb, ordinal,
+  numerology, parallels, fmtOrb, ordinal,
 } from "./engine/extras";
 import { writeJSON, str, strArr, obj, arr } from "./ai-json";
 import { BRAND } from "./config";
@@ -179,7 +179,7 @@ export function fullChartCalc(b: BirthData, now: Date) {
   const timelineRows = top.sort((a, b) => a.sort.localeCompare(b.sort)).map((r, i) => ({ id: `t${i + 1}`, date: r.date, transit: r.transit }));
 
   const today = currentTransits(c, now);
-  const hd = humanDesign(c);
+  const hd = null; // Human Design is no longer part of the Deep Dive
   const y = now.getUTCFullYear();
   const num = numerology(b.date, [y, y + 1, y + 2]);
   const ecl = birthEclipses(c);
@@ -229,7 +229,7 @@ function fmt12(t: string) {
 }
 
 // ---------------- Written part ----------------
-const SYSTEM = `You write the Full Chart reading for ${BRAND.name}, an astrology service. It is for entertainment and self-reflection.
+const SYSTEM = `You write the Natal Chart Deep Dive reading for ${BRAND.name}, an astrology service. It is for entertainment and self-reflection. Astrology only: never mention Human Design.
 
 DATA RULE: every position, house, aspect, orb, speed, star and date you mention must come from the JSON data. Never estimate or recall a position, never invent a date, never add an aspect, star or pattern that isn't listed. Dates in the data are ISO; write them as "July 23, 2027". If something isn't in the data (for example houses when the birth time is unknown), leave it out.
 
@@ -241,7 +241,7 @@ BOUNDARIES: no medical, legal, financial or psychological advice; never predict 
 
 const schemaPortrait = obj({
   glanceIntro: str("2-3 sentence portrait of the whole person, e.g. how the Rising, Sun and Moon play together"),
-  glanceLines: arr({ label: str("the row label exactly as given"), line: str("one line, under 9 words") }, "One line for each At a Glance row"),
+  glanceLines: arr({ label: str("the row label exactly as given"), line: str("one line, under 9 words"), feels: str("how it feels from the inside: one plain sentence, under 16 words"), showsUp: str("how it shows up in daily life: one plain sentence, under 16 words") }, "One entry for each At a Glance row"),
   headline: strArr("'The headline': 2-4 paragraphs on the most unusual, defining features of this chart"),
   angles: arr({ name: str("Ascendant, Midheaven or IC"), subtitle: str("e.g. 'how you arrive', 'what you're known for', 'your roots'"), text: str("1-2 paragraphs, including planets near it, aspects to it and any fixed star on it") }, "Three angles: Ascendant, Midheaven and IC, in that order (never the Descendant; empty array if there are no angles)"),
   planets: arr({ heading: str("e.g. 'Sun in Libra, 11th house' or 'Moon in Pisces, 4th house, conjunct Saturn'"), text: str("one rich paragraph") }, "Planet by planet: Sun to Pluto, then the Nodes, Black Moon Lilith and Part of Fortune"),
@@ -266,8 +266,6 @@ const schemaStructure = obj({
   eclipses: str("'Eclipses and the Moon around your birth': one paragraph naming the prenatal eclipses and what they touch"),
   progNotes: arr({ id: str("row id, e.g. p1"), says: str("what it says, 1-2 sentences") }, "One note per progression row"),
   milestoneNotes: arr({ id: str("row id, e.g. m1"), meaning: str("under 14 words") }, "One note per progressed milestone"),
-  hdPlain: arr({ element: str("Type, Strategy, Authority, Profile, Definition, Incarnation Cross, Defined centres, Open centres, Channels or Signature / not-self"), plain: str("in plain English, under 18 words") }, "Human Design rows (empty array if there is no Human Design data)"),
-  hdEchoes: str("one paragraph on how the Human Design echoes the astrology, or empty string"),
   numerology: str("one paragraph on the Life Path and the personal years given"),
 });
 
@@ -289,7 +287,7 @@ const schemaTimeline = obj({
 });
 
 export interface FullChartText {
-  glanceIntro: string; glanceLines: { label: string; line: string }[]; headline: string[];
+  glanceIntro: string; glanceLines: { label: string; line: string; feels?: string; showsUp?: string }[]; headline: string[];
   angles: { name: string; subtitle: string; text: string }[]; planets: { heading: string; text: string }[];
   housesWeight: string; hemispheres: string; wholeSign: string;
   aspectMeanings: { id: string; meaning: string }[]; minorNote: string; patterns: { title: string; text: string }[]; shape: string;
@@ -314,28 +312,28 @@ export async function fullChartReading(b: BirthData, now = new Date()) {
   const name = c.name;
   const [portrait, structure, timeline] = await Promise.all([
     writeJSON<any>(SYSTEM,
-      `Write the first part of ${name}'s Full Chart: At a Glance (a line for each row in "glance"), the headline, the angles (Ascendant, Midheaven, IC), planet by planet, and the houses commentary. Make the headline about what is genuinely unusual here (dignities, stations near birth, stars on angles, prenatal eclipses on natal points, stelliums).`,
+      `Write the first part of ${name}'s Natal Chart Deep Dive: At a Glance (a line for each row in "glance"), the headline, the angles (Ascendant, Midheaven, IC), planet by planet, and the houses commentary. Make the headline about what is genuinely unusual here (dignities, stations near birth, stars on angles, prenatal eclipses on natal points, stelliums).`,
       { natal, glance: shown.glance, houses: shown.houseRows, wholeSignShifts: shown.wholeSignShifts, stars: shown.stars,
         stationsNearBirth: shown.stationsNearBirth, prenatalEclipses: _ctx.eclipses, dominant: _ctx.dominant, hemispheres: _ctx.hemispheres,
         chartShape: _ctx.chartShape, patterns: _ctx.patterns, sect: _ctx.sect },
       schemaPortrait, 9000, { glanceLines: shown.glance.map(g => g.label) }),
     writeJSON<any>(SYSTEM,
-      `Write the middle part of ${name}'s Full Chart: aspect meanings, patterns, chart shape, planet speeds, declinations, natal retrogrades (with the age each turns direct by progression), upcoming retrograde periods, harmonics, dominants, elements, prenatal eclipses, progressions, Human Design plain-English rows and numerology. Today is ${calc.header.prepared}.`,
+      `Write the middle part of ${name}'s Natal Chart Deep Dive: aspect meanings, patterns, chart shape, planet speeds, declinations, natal retrogrades (with the age each turns direct by progression), upcoming retrograde periods, harmonics, dominants, elements, prenatal eclipses, progressions and numerology. Today is ${calc.header.prepared}.`,
       { natal, aspectRows: shown.aspectRows, minorAspects: shown.minorAspects, patterns: _ctx.patterns, chartShape: _ctx.chartShape,
         speeds: _ctx.speeds, declinations: _ctx.declinations, parallels: _ctx.parallels, natalRetrograde: shown.natalRetros,
         stationsNearBirth: shown.stationsNearBirth, upcomingRetrogrades: _ctx.retroDetail, harmonics: _ctx.harmonics, dominant: _ctx.dominant,
         elements: shown.elements, modalities: shown.modalities, stars: shown.stars, prenatalEclipses: _ctx.eclipses,
-        progressions: { rows: shown.progRows, milestones: shown.milestones, detail: _ctx.progressions }, humanDesign: shown.hd, numerology: shown.numerology },
+        progressions: { rows: shown.progRows, milestones: shown.milestones, detail: _ctx.progressions }, numerology: shown.numerology },
       schemaStructure, 10000, {
         aspectMeanings: shown.aspectRows.map(r => r.id), retroNotes: shown.retros.map(r => r.id), progNotes: shown.progRows.map(r => r.id),
         milestoneNotes: shown.milestones.map(m => m.id), natalRetros: shown.natalRetros.map(r => r.planet),
       }),
     writeJSON<any>(SYSTEM,
-      `Write the timeline part of ${name}'s Full Chart for ${calc.header.timelineSpan}: today's sky (today is ${calc.header.prepared}), the four big stories (from keyWindows and house ingresses, with every exact date), a feel for every date-by-date row, the cheat sheet of the ten things that matter most in this chart, lucky versus growth windows, and a manifestation ritual tied to the next key date (use the lunations list for nearby New and Full Moons).`,
+      `Write the timeline part of ${name}'s Natal Chart Deep Dive for ${calc.header.timelineSpan}: today's sky (today is ${calc.header.prepared}), the four big stories (from keyWindows and house ingresses, with every exact date), a feel for every date-by-date row, the cheat sheet of the ten things that matter most in this chart, lucky versus growth windows, and a manifestation ritual tied to the next key date (use the lunations list for nearby New and Full Moons).`,
       { natal, today: _ctx.today, keyWindows: _ctx.keyWindows, houseIngresses: _ctx.ingresses, dateRows: shown.timelineRows,
-        lunationsSoon: _ctx.lunationsSoon, retrogrades: shown.retros, milestones: shown.milestones, stars: shown.stars, humanDesign: shown.hd ? { type: shown.hd.type, authority: shown.hd.authority, profile: shown.hd.profile } : null },
+        lunationsSoon: _ctx.lunationsSoon, retrogrades: shown.retros, milestones: shown.milestones, stars: shown.stars },
       schemaTimeline, 9000, { dateFeels: shown.timelineRows.map(r => r.id) }),
   ]);
   const doc: FullChartDoc = { v: "fullchart1", calc: shown, text: { ...portrait, ...structure, ...timeline } };
-  return { kind: "fullchart" as const, title: `${name}: The Full Chart`, body: JSON.stringify(doc) };
+  return { kind: "fullchart" as const, title: `${name}'s Natal Chart Deep Dive`, body: JSON.stringify(doc) };
 }

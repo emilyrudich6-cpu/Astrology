@@ -27,7 +27,7 @@ export async function fulfilOneTime(s: Stripe.Checkout.Session): Promise<Fulfill
     : m.product === "synastry" ? { ...base, kind: "synastry", person_id: m.person_id, title: "Your synastry reading" }
     : m.product === "extra" ? { ...base, kind: "synastry", person_id: m.person_id, title: "You & " + ((await db.from("people").select("name").eq("id", m.person_id).maybeSingle()).data?.name ?? "them") }
     : m.product === "yearahead" ? { ...base, kind: "yearahead", title: "Your year ahead" }
-    : m.product === "deepdive" ? { ...base, kind: "natal", title: "Your Natal Chart Deep Dive" }
+    : m.product === "deepdive" ? { ...base, kind: "fullchart", title: "Your Natal Chart Deep Dive" }
     : null;
   // A pre-order (audio) is recorded as a purchase; there is nothing to write
   if (!row) return { readingId: null, toWrite: [] };

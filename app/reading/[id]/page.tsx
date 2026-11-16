@@ -30,7 +30,7 @@ export default async function Reading({ params }: { params: Promise<{ id: string
     <section className={`reading ${r.body.startsWith('{"v":') ? "" : "narrow"}`}>
       <p className="narrow no-print"><Link href="/dashboard">Back to my readings</Link></p>
       {admin && !r.delivered_at && <div className="notice narrow">Admin preview: not delivered yet (due {new Date(r.deliver_at).toLocaleString()}).</div>}
-      {r.body.startsWith('{"v":') ? <ReadingBody body={r.body} />
+      {r.body.startsWith('{"v":') ? <ReadingBody body={r.body}>{r.kind === "fullchart" && r.user_id === user.id && <AudioPreorder />}</ReadingBody>
         : r.kind === "natal" ? <DeepDiveView body={r.body} chart={chart}>{r.user_id === user.id && <AudioPreorder />}</DeepDiveView>
         : <article dangerouslySetInnerHTML={{ __html: md(r.body) }} />}
     </section>

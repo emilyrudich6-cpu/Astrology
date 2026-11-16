@@ -27,7 +27,7 @@ export default async function Buy({ params, searchParams }: { params: Promise<{ 
   const ok = (await availability())[o.key];
   // One Deep Dive per account: anyone who already has theirs is sent to it, not to checkout
   const { data: mine } = product === "deepdive"
-    ? await db.from("readings").select("id,delivered_at").eq("user_id", user.id).eq("kind", "natal").neq("status", "failed").limit(1).maybeSingle()
+    ? await db.from("readings").select("id,delivered_at").eq("user_id", user.id).eq("kind", "fullchart").neq("status", "failed").limit(1).maybeSingle()
     : { data: null };
   // From Saved Friends: both people are already known
   const { data: friend } = product === "synastry" && friendId
@@ -56,24 +56,24 @@ export default async function Buy({ params, searchParams }: { params: Promise<{ 
             <div className="buy-pair">
               <h2 style={{ fontSize: "var(--step-1)" }}>{profile.name || "You"} and {friend.name}</h2>
               <p className="hint">{friend.name}: born {friend.birth_date}{friend.birth_time ? ` at ${friend.birth_time}` : ", birth time unknown"}{friend.birth_place ? `, ${friend.birth_place}` : ""}. From your Saved Friends.</p>
-              <BuyButton product="synastry" friendId={friend.id} label={`${o.cta}, ${o.priceLine}`} />
+              <BuyButton product="synastry" friendId={friend.id} label={`${o.cta} · ${o.price}`} />
               <p className="hint"><Link href="/buy/synastry">Compare with someone else instead</Link></p>
             </div>
           ) : (
             <>
               {friendId && <div className="notice">We couldn't find that saved friend, so enter their details below.</div>}
               <h2 style={{ fontSize: "var(--step-1)" }}>Their birth details</h2>
-              <BirthForm endpoint="/api/buy" extra={{ product: "synastry" }} withRelationship submitLabel={`${o.cta}, ${o.priceLine}`} />
+              <BirthForm endpoint="/api/buy" extra={{ product: "synastry" }} withRelationship submitLabel={`${o.cta} · ${o.price}`} />
             </>
           )}
         </>
       ) : (
         <>
           <p>{o.blurb}</p>
-          <BuyButton product={product as "yearahead" | "deepdive"} label={`${o.cta}, ${o.priceLine}`} />
+          <BuyButton product={product as "yearahead" | "deepdive"} label={`${o.cta} · ${o.price}`} />
         </>
       )}
-      <p className="hint" style={{ marginTop: 24 }}>Your reading appears in <Link href="/dashboard">My readings</Link> as soon as it's written, usually within a few minutes. For entertainment and self-reflection.</p>
+      <p className="hint" style={{ marginTop: 24 }}>Your reading appears in <Link href="/dashboard">My readings</Link> as soon as it's written, usually within a few minutes. This is a single payment. For entertainment and self-reflection.</p>
     </section>
   );
 }
