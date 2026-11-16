@@ -13,6 +13,7 @@ import { currentOffer } from "@/lib/stripe";
 import AutoRefresh from "@/components/AutoRefresh";
 import StartFullChart from "@/components/StartFullChart";
 import StartIncluded from "@/components/StartIncluded";
+import TextAFriend from "@/components/TextAFriend";
 import WritingLoader from "@/components/WritingLoader";
 import { readingCards, cardState, KIND_NAME } from "@/lib/reading-status";
 import Numerology from "@/components/Numerology";
@@ -238,6 +239,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         </details>
 
         {invite && <InviteCard link={invite.code ? inviteLink(invite.code) : null} state={invite.state} />}
+        {!invite && <TextAFriend url={`${process.env.NEXT_PUBLIC_SITE_URL || "https://vertexpoint.talk"}/chart`} />}
       </div>
     </div>
   );
