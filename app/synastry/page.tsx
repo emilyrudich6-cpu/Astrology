@@ -74,8 +74,8 @@ export default function TwoOfYou() {
         </nav>
         <div className="duo-cta">
           <p className="duo-offer">Their timelines line up <strong>mid-November 2026 to mid-January 2027</strong> and again in <strong>late June to July 2027</strong>. Yours shows the dates for the two of you.</p>
-          <Link className="btn brass primary" href={`/login?next=${encodeURIComponent("/buy/synastry")}`}>Get my synastry reading, {offer.price} once</Link>
-          <p className="hint">One-time. Both charts included, plus a free month of your own timeline. Or get {TIERS.deep.compatPerMonth} a month with <Link href="/#plans">Deep Dive, {TIERS.deep.price.replace(" / ", "/")}</Link>.</p>
+          <Link className="btn brass primary" href={`/login?next=${encodeURIComponent("/buy/synastry")}`}>Compare our charts, {offer.price} one time</Link>
+          <p className="hint">One-time. Both charts included, plus a free month of your own timeline. Or get {TIERS.deep.compatPerMonth} a month with <Link href="/#plans">Vertex Point Monthly, {TIERS.deep.price.replace(" / ", "/")}</Link>.</p>
           <p className="hint"><a href="#example">Read the full example reading ↓</a></p>
         </div>
       </section>

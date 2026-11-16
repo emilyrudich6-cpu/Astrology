@@ -4,22 +4,30 @@ import { Rich, Inline, byId } from "./Rich";
 import type { FullChartDoc } from "@/lib/fullchart";
 import { SIGN_ART } from "@/lib/sign-art";
 
-function Section({ title, intro, children, id }: { title: string; intro?: string; children: React.ReactNode; id?: string }) {
-  return (
+/** A part of the report. Everything except the summary at the top starts collapsed; the whole heading opens it. */
+function Section({ title, intro, children, id, open }: { title: string; intro?: string; children: React.ReactNode; id?: string; open?: boolean }) {
+  if (open) return (
     <section className="doc-section" id={id}>
       <h2>{title}</h2>
       {intro && <p className="doc-intro">{intro}</p>}
       {children}
     </section>
   );
+  return (
+    <details className="doc-section fold" id={id}>
+      <summary><h2>{title}</h2></summary>
+      {intro && <p className="doc-intro">{intro}</p>}
+      {children}
+    </details>
+  );
 }
 
 function Table({ head, rows, className }: { head: string[]; rows: (React.ReactNode)[][]; className?: string }) {
   return (
     <div className="doc-table-wrap">
-      <table className={`doc-table ${className ?? ""}`}>
+      <table className={`doc-table stack-table ${className ?? ""}`}>
         <thead><tr>{head.map(h => <th key={h} scope="col">{h}</th>)}</tr></thead>
-        <tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => j === 0 ? <th key={j} scope="row">{c}</th> : <td key={j}>{c}</td>)}</tr>)}</tbody>
+        <tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => j === 0 ? <th key={j} scope="row">{c}</th> : <td key={j} data-label={head[j]}>{c}</td>)}</tr>)}</tbody>
       </table>
     </div>
   );
@@ -51,9 +59,12 @@ export default function FullChartView({ doc }: { doc: FullChartDoc }) {
 
       {h.warnings.length > 0 && <div className="notice">{h.warnings.join(" ")}</div>}
 
-      <Section title="At a Glance">
-        <Rich text={t.glanceIntro} className="doc-lede" />
+      <Section title="At a Glance" open>
         <Table head={["Signature", "Placement", "In one line"]} rows={c.glance.map(g => [g.label, g.placement, line(g.label)])} />
+        <Table head={["Body", "Position", "House", "Speed at birth", "Condition"]}
+          rows={c.planetRows.map(p => [p.body, p.position, p.house, p.speed, p.condition])} className="doc-table-dense" />
+        <p className="hint no-print">Tap a heading below to read that part.</p>
+        <Rich text={t.glanceIntro} className="doc-lede" />
         <div className="doc-callout">
           <h3>The headline</h3>
           <Rich text={t.headline} />
@@ -71,10 +82,7 @@ export default function FullChartView({ doc }: { doc: FullChartDoc }) {
         </Section>
       )}
 
-      <Section title="Planets, Houses & Speeds">
-        <Table head={["Body", "Position", "House", "Speed at birth", "Condition"]}
-          rows={c.planetRows.map(p => [p.body, p.position, p.house, p.speed, p.condition])} className="doc-table-dense" />
-        <h3 className="doc-h3">Planet by planet</h3>
+      <Section title="Planets & Aspects: planet by planet">
         {t.planets?.map((p, i) => (
           <div key={i} className="doc-item"><h4>{p.heading}</h4><Rich text={p.text} /></div>
         ))}

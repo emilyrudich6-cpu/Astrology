@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   const db = supabaseAdmin();
   const { data: p } = await db.from("profiles").select("tier,timezone").eq("id", user.id).single();
   const allowed = p ? TIERS[p.tier as Tier].questionsPerMonth : 0;
-  if (!allowed) return NextResponse.json({ error: "Questions are part of the Deep Dive plan." }, { status: 403 });
+  if (!allowed) return NextResponse.json({ error: "Questions are part of the Vertex Point Monthly plan." }, { status: 403 });
   const used = await planUsedThisMonth(user.id, p!.timezone, "question");
   if (used >= allowed) return NextResponse.json({ error: `You've asked all ${allowed} questions for this month.` }, { status: 429 });
   await db.from("readings").insert({

@@ -71,7 +71,10 @@ export async function natalReading(b: BirthData, now = new Date()) {
   const body = await write(
     `Write ${c.name}'s natal chart deep dive. Cover steps 1 to 7 of the method in order, thoroughly. ` +
     `Then a short step 8: name the 3 key windows in "nextKeyWindows" with their exact dates as a teaser, and mention that the monthly timeline maps every date. ` +
-    `Finish with step 10, tying the ritual to the earliest of those dates. Title: "${title}".`,
+    `Finish with step 10, tying the ritual to the earliest of those dates. Title: "${title}". ` +
+    `Directly under the title, before any other text, put one Markdown table with exactly these columns: Placement | How it feels | How it shows up. ` +
+    `Give it one row each for the Sun, Moon, Rising sign (only if the birth time is known), chart ruler, Mercury, Venus and Mars. ` +
+    `"Placement" is the planet with its sign and house; the other two cells are one plain sentence each, under 20 words. Use no other tables.`,
     data,
   );
   return { kind: "natal" as const, title, body, chart: c };

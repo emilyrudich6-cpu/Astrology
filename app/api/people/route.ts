@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const db = supabaseAdmin();
   const { data: p } = await db.from("profiles").select("tier").eq("id", user.id).single();
   const max = p ? TIERS[p.tier as Tier].savedPeople : 0;
-  if (!max) return NextResponse.json({ error: "Your People is part of Deep Dive." }, { status: 403 });
+  if (!max) return NextResponse.json({ error: "Your People is part of Vertex Point Monthly." }, { status: 403 });
   const { count: saved } = await db.from("people").select("id", { count: "exact", head: true }).eq("user_id", user.id).eq("purchased", false);
   if ((saved ?? 0) >= max) return NextResponse.json({ error: `You can save up to ${max} people. Remove one first.` }, { status: 400 });
   const { data: person, error } = await db.from("people").insert({ user_id: user.id, relationship, ...parsed.value }).select("id").single();

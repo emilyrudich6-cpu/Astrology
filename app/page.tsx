@@ -1,7 +1,7 @@
 import Link from "next/link";
 import InvitedBanner from "@/components/InvitedBanner";
 import { BRAND } from "@/lib/config";
-import { OFFERS, availability } from "@/lib/offers";
+import { ONE_TIME_OFFERS, MONTHLY, availability } from "@/lib/offers";
 import NewsletterSignup from "@/components/NewsletterSignup";
 
 export const revalidate = 3600;
@@ -30,7 +30,7 @@ export default async function Home() {
               <Link className="btn primary" href="/chart">Get my free chart</Link>
               <span className="free-note">Free · <span className="nowrap">No account needed</span></span>
             </div>
-            <Link className="compare-link" href="/synastry">Or compare your chart with someone ♡</Link>
+            <Link className="btn ghost compare-two" href="/synastry">Compare two charts</Link>
           </div>
         </div>
         <div className="hero-side">
@@ -61,20 +61,34 @@ export default async function Home() {
 
       <section className="wrap block plans" id="plans" aria-labelledby="plans-h">
         <h2 id="plans-h">Readings &amp; Plans</h2>
-        <ul className="plan-rows">
-          {OFFERS.map(o => (
-            <li key={o.key}>
-              <div className="plan-main">
-                <p className="plan-name">{o.label}</p>
-                <p className="plan-blurb">{o.blurb}{o.key === "synastry" && <> <Link href="/synastry">See an example</Link></>}</p>
-              </div>
-              <p className="plan-price">{o.priceLine}</p>
-              {available[o.key]
-                ? <Link className="btn small" href={`/login?next=${encodeURIComponent(o.path)}`}>{o.key === "deep" ? "Choose Deep Dive" : "Get it"}</Link>
-                : <span className="hint plan-soon">Coming soon</span>}
-            </li>
-          ))}
-        </ul>
+        <div className="plan-card">
+          <h3>One-time readings</h3>
+          <ul className="plan-rows">
+            {ONE_TIME_OFFERS.map(o => (
+              <li key={o.key}>
+                <div className="plan-main">
+                  <p className="plan-name">{o.label}</p>
+                  <p className="plan-blurb">{o.blurb}{o.key === "synastry" && <> <Link href="/synastry">See an example</Link></>}</p>
+                </div>
+                <p className="plan-price">{o.priceLine}</p>
+                {available[o.key]
+                  ? <Link className="btn small" href={`/login?next=${encodeURIComponent(o.path)}`}>{o.cta}</Link>
+                  : <span className="hint plan-soon">Coming soon</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="plan-card plan-monthly">
+          <div className="plan-main">
+            <h3>{MONTHLY.label}</h3>
+            <p className="plan-blurb">{MONTHLY.blurb}</p>
+            <p className="hint">Cancel any time.</p>
+          </div>
+          <p className="plan-price">{MONTHLY.priceLine}</p>
+          {available.deep
+            ? <Link className="btn small" href={`/login?next=${encodeURIComponent(MONTHLY.path)}`}>{MONTHLY.cta}</Link>
+            : <span className="hint plan-soon">Coming soon</span>}
+        </div>
         <p className="hint" style={{ marginTop: 18 }}>Your birth chart is always free: <Link href="/chart">get my free chart</Link>. Members can change or cancel their plan from My readings. {BRAND.name} is for entertainment and self-reflection.</p>
       </section>
 

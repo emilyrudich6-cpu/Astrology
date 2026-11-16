@@ -20,7 +20,13 @@ export async function POST(req: Request) {
   ]);
   if (!price) return NextResponse.json({ error: "This isn't available right now." }, { status: 400 });
   if (!p?.birth_date) return NextResponse.json({ error: "Add your birth details first." }, { status: 400 });
-  if (ONE_TIME[product].membersOnly && p.tier !== "deep") return NextResponse.json({ error: "Extra readings are for Deep Dive members." }, { status: 403 });
+  if (ONE_TIME[product].membersOnly && p.tier !== "deep") return NextResponse.json({ error: "Extra readings are for Vertex Point Monthly members." }, { status: 403 });
+
+  if (product === "deepdive") {
+    // One Deep Dive per account: never charge for a report they already have
+    const { data: have } = await db.from("readings").select("id").eq("user_id", user.id).eq("kind", "natal").neq("status", "failed").limit(1);
+    if (have?.length) return NextResponse.json({ error: "You already have your Natal Chart Deep Dive. It's in Your readings." }, { status: 400 });
+  }
 
   const metadata: Record<string, string> = { user_id: user.id, product };
   if (product === "question") {

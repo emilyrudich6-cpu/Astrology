@@ -18,7 +18,7 @@ import SeeingNumbersCard from "@/components/SeeingNumbersCard";
 import { mostLogged } from "@/lib/seeing-numbers";
 import OfferSummary from "@/components/OfferSummary";
 import StripePreconnect from "@/components/StripePreconnect";
-import { offer } from "@/lib/offers";
+import { offer, availability } from "@/lib/offers";
 import InviteCard from "@/components/InviteCard";
 import SharePrompt from "@/components/SharePrompt";
 import { FEATURES } from "@/lib/features";
@@ -27,7 +27,7 @@ import { SIGN_ART } from "@/lib/sign-art";
 import { currentUser, supabaseAdmin, isAdmin } from "@/lib/supabase";
 import { natalChart } from "@/lib/engine/natal";
 import { birthFromRow } from "@/lib/pipeline";
-import { TIERS, Tier, QUESTION_MENU, ONE_TIME } from "@/lib/config";
+import { TIERS, Tier, QUESTION_MENU, ONE_TIME, AUDIO_DELIVERY_NOTE } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -77,7 +77,10 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const invite = FEATURES.referrals ? { code: await getInviteCode(user.id), state: await inviteStatus(user.id) } : null;
   const wantPlan = plan === "timeline" || plan === "deep" ? plan : null;
   const fmt = (d: string) => new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: profile.timezone });
-  const kindLabel: Record<string, string> = { natal: "your free chart", timeline: "your monthly timeline", question: "an answer to your question", synastry: "your Compatibility Reading", yearahead: "your year-ahead timeline", fullchart: "your Full Chart" };
+  const kindLabel: Record<string, string> = { natal: "your Natal Chart Deep Dive", timeline: "your monthly timeline", question: "an answer to your question", synastry: "your Compatibility Reading", yearahead: "your year-ahead timeline", fullchart: "your Full Chart" };
+  const can = await availability(); // a buy button shows only when Stripe charges exactly the price shown
+  const hasDeepDive = (readings ?? []).some(r => r.kind === "natal" && r.status !== "failed");
+  const monthly = TIERS.deep.price.replace(" / ", "/");
   const hasFullChart = (readings ?? []).some(r => r.kind === "fullchart" && r.status !== "failed");
 
   return (
@@ -91,34 +94,11 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           <p style={{ margin: 0 }}>☉ {chart.bigThree.sun}<br />☽ {chart.bigThree.moon}<br />AC {chart.bigThree.ascendant}</p>
           <p className="hint" style={{ marginTop: 10 }}>{profile.birth_place} · <Link href="/onboarding">Edit birth details</Link></p>
         </div>
-        <SeeingNumbersCard top={mostLogged(sightings ?? [])} />
-        <div className="panel">
-          <Numerology birthDate={profile.birth_date} serverYear={new Date().getUTCFullYear()} compact />
-        </div>
-        <div className="panel">
-          <h3>Your plan: {tier.label}</h3>
-          {profile.tier === "free" ? (
-            <>
-              <p className="hint">Deep Dive adds monthly timeline updates, personalized insights and 5 synastry readings a month.</p>
-              <CheckoutButton tier="deep" label={`Deep Dive, ${TIERS.deep.price.replace(" / ", "/")}`} />
-            </>
-          ) : (
-            <>
-              {profile.tier === "timeline" && <div style={{ marginBottom: 10 }}><CheckoutButton tier="deep" label={`Upgrade to Deep Dive, ${TIERS.deep.price}`} /></div>}
-              <ManageBillingButton />
-            </>
-          )}
-        </div>
-        <div className="panel">
-          <h3>Arrival alerts</h3>
-          <p className="hint">Readings land on surprise days. Turn on alerts so you see them right away. We always email you too.</p>
-          <PushButton vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""} />
-        </div>
       </aside>
 
       <div>
         {upgraded && <div className="notice">You're in. Your first timeline arrives within the next three days, on a surprise day.</div>}
-        {bought && (
+        {bought && bought !== "audio" && (
           <div className="notice" role="status">
             {boughtRow?.delivered_at ? <>Your {boughtName} is ready. <Link href={`/reading/${boughtRow.id}`}>Open {boughtRow.title ?? "it"}</Link></>
               : boughtState === "failed" || boughtState === "stalled" ? <>Payment received, but your {boughtName} hit a problem while being written. Use Try again below: you won't be charged again.</>
@@ -127,18 +107,24 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
               : <>We couldn't find a {boughtName} purchase on this account ({user.email}). If you paid while signed in with a different email, sign out and sign in with that one: your reading is tied to that account.</>}
           </div>
         )}
-        {wantPlan && TIERS[wantPlan].forSale && profile.tier === "free" && (
+        {bought === "audio" && AUDIO_DELIVERY_NOTE && <div className="notice" role="status">Your audio reading is pre-ordered. {AUDIO_DELIVERY_NOTE}</div>}
+        {wantPlan && TIERS[wantPlan].forSale && profile.tier === "free" && can.deep && (
           <div className="panel">
-            <h3>Finish choosing {TIERS[wantPlan].label}</h3>
+            <h3>Finish joining {TIERS[wantPlan].label}</h3>
             <OfferSummary offer={offer("deep")} step="Pay securely with Stripe. Cancel any time." />
-            <CheckoutButton tier={wantPlan} label={`Continue to payment, ${TIERS[wantPlan].price.replace(" / ", "/")}`} />
+            <CheckoutButton tier={wantPlan} label={`Join monthly, ${monthly}`} />
           </div>
         )}
 
         {askShare && <SharePrompt inviter={askShare.inviter} />}
-        <h2>Your readings</h2>
+        <h2 id="readings">Your readings</h2>
         {(active || (bought && session_id && !boughtRow)) && <AutoRefresh seconds={8} />}
-        {bonusUntil && <div className="notice">Your free month of timeline readings runs until {fmt(bonusUntil.toISOString())}. Want it every month? <a href="/dashboard?plan=deep">Get Deep Dive, {TIERS.deep.price.replace(" / ", "/")}</a></div>}
+        {bonusUntil && (
+          <div className="notice">
+            Your Compatibility reading came with a free month of timeline readings, until {fmt(bonusUntil.toISOString())}. It's included once, with your first Compatibility reading.
+            {can.deep && <> Want it every month? <a href="/dashboard?plan=deep">Join monthly, {monthly}</a></>}
+          </div>
+        )}
         {cards.map(c => (
           <WritingLoader key={c.id} id={c.id} kind={c.kind} state={c.state} since={c.since} who={whoOf(c.personId)}
             sign={chart.planets[0].sign} art={SIGN_ART[chart.planets[0].sign]} />
@@ -149,7 +135,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             {active ? "This page refreshes on its own." : "Each arrives on a surprise day."}
           </p>
         )}
-        {delivered.length === 0 && !natalPending && <p className="onway">Nothing here yet.</p>}
+        {delivered.length === 0 && onTheWay.length === 0 && <p className="onway">Your saved readings will appear here.</p>}
         <ul className="inbox">
           {delivered.map(r => (
             <li key={r.id} className={r.read_at ? "" : "unread"}>
@@ -158,49 +144,79 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
           ))}
         </ul>
 
+        <section className="panel" id="friends" style={{ marginTop: 32 }}>
+          <h3>{ONE_TIME.synastry.label}</h3>
+          <p className="hint">{ONE_TIME.synastry.blurb} <Link href="/synastry">See an example</Link></p>
+          {tier.compatPerMonth === 0 && compat && can.synastry && <BuyCompatibility price={compat.price} />}
+          <h4 className="sub-h">Saved Friends</h4>
+          <SavedFriends friends={friends} me={bigThree(birthFromRow(profile))} myName={profile.name || "You"} max={SAVED_FRIENDS_MAX}
+            price={compat?.price ?? ONE_TIME.synastry.price}
+            plan={tier.compatPerMonth > 0 ? { perMonth: tier.compatPerMonth, remaining: Math.max(0, tier.compatPerMonth - compatThisMonth), extraPrice: ONE_TIME.extra.price } : null} />
+        </section>
+
+        {!hasDeepDive && (
+          <section className="panel">
+            <h3>{ONE_TIME.deepdive.label}</h3>
+            <p className="hint">{ONE_TIME.deepdive.blurb}</p>
+            {can.deepdive
+              ? <BuyButton product="deepdive" label={`${ONE_TIME.deepdive.cta}, ${ONE_TIME.deepdive.price} one time`} />
+              : <p className="hint">Coming soon.</p>}
+          </section>
+        )}
+        {ONE_TIME.yearahead.enabled && (
+          <section className="panel">
+            <h3>{ONE_TIME.yearahead.label}</h3>
+            <p className="hint">{ONE_TIME.yearahead.blurb}</p>
+            {can.yearahead
+              ? <BuyButton product="yearahead" label={`${ONE_TIME.yearahead.cta}, ${ONE_TIME.yearahead.price} one time`} />
+              : <p className="hint">Coming soon.</p>}
+          </section>
+        )}
         {(tier.fullChart || isAdmin(user.email)) && !hasFullChart && (
-          <section className="panel" style={{ marginTop: 32 }}>
+          <section className="panel">
             <h3>Your Full Chart</h3>
             <p className="hint">Your whole chart, planet by planet, with fixed stars, progressions, Human Design and a two-year timeline of exact dates. It's included in your membership.</p>
             <StartFullChart />
           </section>
         )}
-        {ONE_TIME.yearahead.enabled && (
-          <section className="panel" style={{ marginTop: 32 }}>
-            <h3>{ONE_TIME.yearahead.label}</h3>
-            <p className="hint">{ONE_TIME.yearahead.blurb}</p>
-            <BuyButton product="yearahead" label={`Get my year ahead, ${ONE_TIME.yearahead.price} once`} />
-          </section>
-        )}
-        <section className="panel" id="friends">
-          <h3>Saved Friends</h3>
-          <SavedFriends friends={friends} me={bigThree(birthFromRow(profile))} myName={profile.name || "You"} max={SAVED_FRIENDS_MAX}
-            price={compat?.price ?? ONE_TIME.synastry.price}
-            plan={tier.compatPerMonth > 0 ? { perMonth: tier.compatPerMonth, remaining: Math.max(0, tier.compatPerMonth - compatThisMonth), extraPrice: ONE_TIME.extra.price } : null} />
-        </section>
-        {tier.compatPerMonth === 0 && (
-          <section className="panel">
-            <h3>{ONE_TIME.synastry.label}</h3>
-            <p className="hint">{ONE_TIME.synastry.blurb}</p>
-            {compat && <>
-              <p className="hint">Or get {TIERS.deep.compatPerMonth} synastry readings every month with <Link href="/dashboard?plan=deep">Deep Dive, {TIERS.deep.price}</Link>.</p>
-              <BuyCompatibility price={compat.price} />
-            </>}
-          </section>
-        )}
 
-        {invite && <InviteCard link={invite.code ? inviteLink(invite.code) : null} state={invite.state} />}
-
-        <section className="panel">
-          <h3>Monthly timeline and personalized insights</h3>
-          {tier.questionsPerMonth > 0 || ONE_TIME.question.enabled ? (
-            <AskQuestion menu={QUESTION_MENU} remaining={Math.max(0, tier.questionsPerMonth - askedThisMonth)} perMonth={tier.questionsPerMonth}
-              buyPrice={ONE_TIME.question.enabled ? ONE_TIME.question.price : undefined} />
+        <section className="panel plan-monthly-card" id="monthly">
+          <h3>{TIERS.deep.label}</h3>
+          {profile.tier === "free" ? (
+            <>
+              <p>{TIERS.deep.blurb}</p>
+              <p className="plan-price">{monthly}</p>
+              {can.deep ? <CheckoutButton tier="deep" label={`Join monthly, ${monthly}`} /> : <p className="hint">Coming soon.</p>}
+              <p className="hint" style={{ marginTop: 10 }}>You're on the free plan. Cancel any time after joining.</p>
+            </>
           ) : (
-            <p className="hint">Deep Dive members get monthly updates of their timeline plus {TIERS.deep.questionsPerMonth} deeper, personalized insights a month, chosen from a guided menu and delivered on surprise days. <Link href="/dashboard?plan=deep">Deep Dive, {TIERS.deep.price}</Link></p>
+            <>
+              <p className="hint">You're a member{profile.tier === "timeline" ? " on the earlier Timeline plan" : ""}. Your timeline update and insights arrive in Your readings on surprise days.</p>
+              {profile.tier === "timeline" && can.deep && <div style={{ marginBottom: 10 }}><CheckoutButton tier="deep" label={`Switch to ${TIERS.deep.label}, ${monthly}`} /></div>}
+              {tier.questionsPerMonth > 0 && (
+                <AskQuestion menu={QUESTION_MENU} remaining={Math.max(0, tier.questionsPerMonth - askedThisMonth)} perMonth={tier.questionsPerMonth}
+                  buyPrice={ONE_TIME.question.enabled ? ONE_TIME.question.price : undefined} />
+              )}
+              <ManageBillingButton />
+            </>
           )}
         </section>
 
+        <section className="panel">
+          <h3>Arrival alerts</h3>
+          <p className="hint">Readings land on surprise days. Turn on alerts so you see them right away. We always email you too.</p>
+          <PushButton vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""} />
+        </section>
+
+        <details className="full dash-fold" id="numerology">
+          <summary>Numerology &amp; number journal</summary>
+          <SeeingNumbersCard top={mostLogged(sightings ?? [])} />
+          <div className="panel">
+            <Numerology birthDate={profile.birth_date} serverYear={new Date().getUTCFullYear()} compact />
+          </div>
+        </details>
+
+        {invite && <InviteCard link={invite.code ? inviteLink(invite.code) : null} state={invite.state} />}
       </div>
     </div>
   );

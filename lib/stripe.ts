@@ -1,21 +1,32 @@
 import Stripe from "stripe";
-import { TIERS, Tier, Interval, ONE_TIME, OneTimeKey } from "./config";
+import { TIERS, Tier, Interval, ONE_TIME, OneTimeKey, cents } from "./config";
 import { supabaseAdmin } from "./supabase";
 
 export const stripe = () => new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-// Price IDs are looked up from Stripe by lookup key and cached for 10 minutes.
-let cache: { at: number; ids: Record<string, string> } | null = null;
-async function priceIds(): Promise<Record<string, string>> {
-  if (cache && Date.now() - cache.at < 600_000) return cache.ids;
+// Prices are looked up from Stripe by lookup key and cached for 10 minutes.
+type PriceInfo = { id: string; amount: number | null; interval: string | null };
+let cache: { at: number; info: Record<string, PriceInfo> } | null = null;
+async function priceInfo(): Promise<Record<string, PriceInfo>> {
+  if (cache && Date.now() - cache.at < 600_000) return cache.info;
   const keys = [
     ...Object.values(TIERS).flatMap(t => [t.stripeLookupKey, t.stripeYearlyLookupKey]),
     ...Object.values(ONE_TIME).flatMap(o => [o.stripeLookupKey, o.founding?.stripeLookupKey]),
   ].filter(Boolean) as string[];
   const res = await stripe().prices.list({ lookup_keys: keys, active: true, limit: 100 });
-  const ids = Object.fromEntries(res.data.map(p => [p.lookup_key!, p.id]));
-  cache = { at: Date.now(), ids };
-  return ids;
+  const info = Object.fromEntries(res.data.map(p => [p.lookup_key!, { id: p.id, amount: p.unit_amount, interval: p.recurring?.interval ?? null }]));
+  cache = { at: Date.now(), info };
+  return info;
+}
+async function priceIds(): Promise<Record<string, string>> {
+  return Object.fromEntries(Object.entries(await priceInfo()).map(([k, v]) => [k, v.id]));
+}
+
+/** True only when Stripe has this price AND it charges exactly what the site shows, on the same schedule.
+ *  A buy button for anything else stays hidden, so a customer never sees one amount and pays another. */
+export async function priceMatches(lookupKey: string, shown: string, interval: "month" | null): Promise<boolean> {
+  const p = (await priceInfo())[lookupKey];
+  return !!p && p.amount === cents(shown) && p.interval === interval;
 }
 
 export async function priceFor(t: Tier, interval: Interval = "month"): Promise<string | undefined> {

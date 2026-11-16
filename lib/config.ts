@@ -34,37 +34,49 @@ export const TIERS: Record<Tier, {
     monthlyTimeline: true, questionsPerMonth: 0, savedPeople: 0, compatPerMonth: 0, fullChart: true,
     stripeLookupKey: "timeline_monthly",
     yearlyPrice: "$90 / year (2 months free)", stripeYearlyLookupKey: "timeline_yearly",
-    forSale: false, // existing Timeline members keep their plan; new members choose Deep Dive
+    forSale: false, // existing Timeline members keep their plan; new members choose Vertex Point Monthly
   },
   deep: {
-    label: "Deep Dive", price: "$9.99 / month", blurb: "Monthly updates of your timeline, 2 personalized insights a month, and synastry with anyone you add.",
-    perks: ["Everything in Timeline", "Monthly updates of your timeline", "2 deeper, personalized insights a month", "5 synastry readings a month with anyone you add to Your People", "Extra synastry readings $3.99 each"],
+    // The subscription. Customers see "Vertex Point Monthly"; the internal key stays "deep" so existing members keep their plan.
+    label: "Vertex Point Monthly", price: "$8.88 / month",
+    blurb: "Get a monthly timeline update, five compatibility readings, and two personal astrology insights. They arrive in Your readings on surprise days.",
+    perks: ["A monthly timeline update", "Five compatibility readings a month with your saved friends", "Two personal astrology insights a month", "Extra compatibility readings $3.99 each"],
     monthlyTimeline: true, questionsPerMonth: 2, savedPeople: 30, compatPerMonth: 5, fullChart: true,
-    stripeLookupKey: "deep_monthly",
-    stripeYearlyLookupKey: "deep_yearly", // not sold now; kept so existing yearly members map to Deep Dive
+    stripeLookupKey: "vp_monthly", // $8.88/month. The older $9.99 "deep_monthly" price still maps here through its "tier" metadata
+    stripeYearlyLookupKey: "deep_yearly", // not sold now; kept so existing yearly members keep their plan
     forSale: true,
   },
 };
 
 /** One-time purchases for anyone signed in, subscribed or not. They arrive right away (about 2 minutes).
  *  Set enabled: false to hide one. */
-export type OneTimeKey = "question" | "synastry" | "yearahead" | "extra";
+export type OneTimeKey = "question" | "synastry" | "yearahead" | "extra" | "deepdive" | "audio";
 export const ONE_TIME: Record<OneTimeKey, {
   enabled: boolean; label: string; price: string; blurb: string; stripeLookupKey: string;
-  membersOnly?: boolean; // only Deep Dive members can buy it
+  cta?: string;          // button text
+  membersOnly?: boolean; // only Vertex Point Monthly members can buy it
   founding?: { price: string; limit: number; stripeLookupKey: string }; // early-buyer price for the first `limit` sales
   bonusTimelineDays?: number; // free timeline included with the purchase
 }> = {
   synastry: {
-    enabled: true, label: "Compatibility (Synastry) Reading", price: "$11.11",
-    blurb: "Your chart next to theirs, both included. Where you two click, where you'll clash, and how to move through it, plus how your timelines line up over the next year. Includes a free month of your personal timeline.",
+    enabled: true, label: "Compatibility (Synastry)", price: "$11.11", cta: "Compare our charts",
+    blurb: "Your chart next to theirs, both included. Where you two click, where you'll clash, and how to move through it, plus how your timelines line up over the next year. Your first one includes a free month of your personal timeline.",
     stripeLookupKey: "compat_regular",
     bonusTimelineDays: 30,
   },
   question: { enabled: false, label: "Single question", price: "$9", blurb: "Pick one question from the menu and get your answer in minutes.", stripeLookupKey: "one_question" },
   extra: { enabled: true, membersOnly: true, label: "Extra synastry reading", price: "$3.99", blurb: "One more synastry reading this month, beyond the 5 in your plan.", stripeLookupKey: "compat_extra" },
-  yearahead: { enabled: true, label: "Year-ahead timeline", price: "$6.66", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripeLookupKey: "yearahead" },
+  yearahead: { enabled: true, label: "Year-Ahead Timeline", price: "$7.77", cta: "See my year ahead", blurb: "Your next 12 months: every major transit peak date, grouped into themes and windows.", stripeLookupKey: "yearahead_v2" },
+  deepdive: { enabled: true, label: "Natal Chart Deep Dive", price: "$5.55", cta: "Get my deep dive", blurb: "Your whole birth chart in writing: your Big Three and chart ruler, every planet, the aspects, your chart's shape and hidden talents, and a closing ritual.", stripeLookupKey: "natal_deepdive" },
+  // Published only when FEATURE_AUDIO_PREORDER is on, AUDIO_DELIVERY_NOTE says when and how it's delivered, and the Stripe price exists
+  audio: { enabled: process.env.FEATURE_AUDIO_PREORDER === "on" && !!process.env.AUDIO_DELIVERY_NOTE, label: "Your Chart, in Audio", price: "$25", cta: "Pre-order my audio reading", blurb: "A personal audio reading that walks you through your birth chart and what it can tell you about yourself.", stripeLookupKey: "audio_preorder" },
 };
+
+/** When and how a pre-ordered audio reading is delivered, shown to the buyer before and after paying */
+export const AUDIO_DELIVERY_NOTE = process.env.AUDIO_DELIVERY_NOTE ?? "";
+
+/** "$11.11" -> 1111, "$8.88 / month" -> 888: what Stripe should be charging for a price shown on the site */
+export const cents = (shown: string) => Math.round(parseFloat(shown.replace(/[^0-9.]/g, "")) * 100);
 
 /** Surprise delivery: answers arrive between these many days after asking */
 export const DELIVERY_DAYS = { min: 2, max: 9 };

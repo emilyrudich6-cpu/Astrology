@@ -97,7 +97,7 @@ export default function SeeingNumbers({ initial, cap, compare, deep }: { initial
       ) : (
         <div className="panel">
           <p><strong>You've saved {cap} entries,</strong> the limit for the pilot. You can still read, edit and delete them.</p>
-          {compare && !deep && <p className="hint">Deep Dive members can keep unlimited entries and compare each one with their timeline. <Link href="/dashboard?plan=deep">See Deep Dive</Link></p>}
+          {compare && !deep && <p className="hint">Vertex Point Monthly members can keep unlimited entries and compare each one with their timeline. <Link href="/dashboard?plan=deep">See Vertex Point Monthly</Link></p>}
         </div>
       )}
 
@@ -116,7 +116,7 @@ export default function SeeingNumbers({ initial, cap, compare, deep }: { initial
                 <div className="sn-actions">
                   {compare && (deep
                     ? <Link href={`/seeing-numbers/${e.id}`}>Compare with my timeline</Link>
-                    : <Link href="/dashboard?plan=deep" className="hint">Compare with my timeline (Deep Dive)</Link>)}
+                    : <Link href="/dashboard?plan=deep" className="hint">Compare with my timeline (Vertex Point Monthly)</Link>)}
                   <button type="button" className="linklike" onClick={() => startEdit(e)}>Edit</button>
                   {confirmDelete === e.id ? (
                     <span>Delete this entry? <button type="button" className="linklike" onClick={() => remove(e.id)}>Yes, delete</button>{" "}
